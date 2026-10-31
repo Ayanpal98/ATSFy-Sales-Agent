@@ -32,6 +32,17 @@ input{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--ink);
 .send{background:var(--brand);color:var(--brandink);border:0;border-radius:999px;padding:0 18px;font-weight:600}
 .send:disabled{opacity:.5}
 .note{font-size:12px;color:var(--mute);padding:0 16px 10px;text-align:center}
+.leadbox{margin:0 16px 10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+.leadbox summary{cursor:pointer;color:var(--brand);font-weight:650}
+.leadgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.leadgrid input{width:100%;border-radius:9px;padding:9px 10px}
+.leadgrid .wide{grid-column:1/-1}
+.leadbox label{font-size:12px;color:var(--mute)}
+.leadbox .consent{display:flex;align-items:flex-start;gap:8px;margin:10px 0}
+.leadbox .consent input{flex:0;width:auto;margin-top:3px}
+.leadbox button{border:0;border-radius:9px;padding:9px 13px;background:var(--brand);color:var(--brandink);font-weight:650}
+#leadMessage{font-size:12px;color:var(--mute);margin:8px 0 0}
+@media(max-width:420px){.leadgrid{grid-template-columns:1fr}.leadgrid .wide{grid-column:auto}}
 a.wa{display:inline-block;margin-top:6px;color:var(--brand);font-weight:600}
 </style>
 </head>
@@ -41,6 +52,16 @@ a.wa{display:inline-block;margin-top:6px;color:var(--brand);font-weight:600}
 <div id="log"></div>
 <div class="chips" id="chips"></div>
 <div class="tools" id="tools"></div>
+<details class="leadbox"><summary>Share your details for an ATSFy follow-up</summary>
+<form id="leadForm" class="leadgrid">
+<input name="name" placeholder="Your name *" maxlength="120" required><input name="company" placeholder="Business / company" maxlength="160">
+<input name="phone" placeholder="Phone / WhatsApp"><input name="email" type="email" placeholder="Email address">
+<input name="industry" placeholder="Industry" maxlength="100"><input name="city" placeholder="City / region" maxlength="100">
+<input class="wide" name="need" placeholder="What would you like ATSFy to help with?" maxlength="500">
+<input name="budget" placeholder="Approx. budget (optional)" maxlength="100"><input name="timeline" placeholder="Expected timeline (optional)" maxlength="100">
+<input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+<label class="consent wide"><input type="checkbox" name="consent" required><span>I agree that ATSFy Technologies may contact me about this enquiry. I can ask to stop follow-ups at any time.</span></label>
+<div class="wide"><button type="submit">Send enquiry</button><p id="leadMessage" role="status"></p></div></form></details>
 <form id="f"><input id="in" placeholder="Type your message…" autocomplete="off"><button class="send" id="go">Send</button></form>
 <div class="note">AI-powered sales assistant · final quotes are confirmed by the ATSFy team</div>
 </div>
@@ -125,6 +146,15 @@ async function send(text, shareToWhatsApp = false) {
   }
 }
 document.getElementById("f").onsubmit = e => { e.preventDefault(); send(inp.value); };
+document.getElementById("leadForm").onsubmit = async e => {
+ e.preventDefault(); const form=e.currentTarget, data=Object.fromEntries(new FormData(form).entries());
+ data.consent=form.elements.consent.checked; const msg=document.getElementById("leadMessage"), btn=form.querySelector("button");
+ btn.disabled=true; msg.textContent="Sending securely…";
+ try { const r=await fetch("/api/leads",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+ const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||"Unable to submit enquiry.");
+ msg.textContent=d.message||"Thank you. ATSFy has received your enquiry."; form.reset();
+ } catch(err){msg.textContent=err.message;} finally{btn.disabled=false;}
+};
 </script>
 </body>
 </html>
