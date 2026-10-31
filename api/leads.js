@@ -4,7 +4,13 @@ function json(res, status, body) {
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") { res.setHeader("Allow", "POST"); return json(res, 405, { error: "Method not allowed." }); }
   const origin = req.headers.origin;
-  if (origin !== "https://atsfysalesagent.vercel.app") return json(res, 403, { error: "Request origin not allowed." });
+  let allowedOrigin = false;
+  try {
+    const host = new URL(origin).hostname;
+    allowedOrigin = new URL(origin).protocol === "https:" &&
+      (host === "atsfysalesagent.vercel.app" || /^atsfysalesagent-[a-z0-9-]+-ayanpal98s-projects\\.vercel\\.app$/.test(host));
+  } catch {}
+  if (!allowedOrigin) return json(res, 403, { error: "Request origin not allowed." });
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return json(res, 503, { error: "Lead storage is being configured. Please contact ATSFy directly." });
