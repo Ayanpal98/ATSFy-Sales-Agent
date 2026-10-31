@@ -30,9 +30,10 @@ Do not reuse another application's Supabase project. Do not commit secrets.
 1. Create a dedicated project for ATSFy Sales Agent.
 2. Review and apply `supabase/migrations/202610310001_sales_crm.sql`.
 3. Disable public sign-ups and provision an administrator account.
-4. Set the administrator's `app_metadata.role` to `admin` through a trusted admin workflow.
+4. Set the administrator's `app_metadata.role` to `admin` through a trusted admin workflow (for example, a controlled Auth admin operation; never from the browser).
 5. Add the Supabase variables to Vercel Preview first.
-6. Test lead intake, login, RLS and stage updates in Preview before promoting to Production.
+6. Add a distributed abuse-control layer (Cloudflare Turnstile and/or Vercel Firewall rate limiting) before enabling public lead intake in Production. The current endpoint has origin and honeypot checks but no globally shared rate limiter.
+7. Test lead intake, login, RLS and stage updates in Preview before promoting to Production.
 
 ## Deployment
 Changes pushed to `main` deploy to Production; feature branches create Preview deployments.
