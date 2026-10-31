@@ -8,7 +8,7 @@ module.exports = async function handler(req, res) {
   try {
     const host = new URL(origin).hostname;
     allowedOrigin = new URL(origin).protocol === "https:" &&
-      (host === "atsfysalesagent.vercel.app" || /^atsfysalesagent-[a-z0-9-]+-ayanpal98s-projects\\.vercel\\.app$/.test(host));
+      (host === "atsfysalesagent.vercel.app" || /^atsfysalesagent-[a-z0-9-]+-ayanpal98s-projects\.vercel\.app$/.test(host));
   } catch {}
   if (!allowedOrigin) return json(res, 403, { error: "Request origin not allowed." });
   const url = process.env.SUPABASE_URL;
