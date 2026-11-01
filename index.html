@@ -68,7 +68,8 @@ button,input{font:inherit}button{cursor:pointer}.shell{max-width:1240px;margin:a
             <input name="budget" placeholder="Approx. budget (optional)" maxlength="100"><input name="timeline" placeholder="Expected timeline (optional)" maxlength="100">
             <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
             <label class="consent wide"><input type="checkbox" name="consent" required><span>I agree that ATSFY Technologies may contact me about this enquiry. I can ask to stop follow-ups at any time.</span></label>
-            <label class="consent wide"><input type="checkbox" name="whatsapp_opt_in"><span>Optional: I agree to receive WhatsApp updates about this enquiry from ATSFY Technologies. I can withdraw this consent at any time.</span></label>\n            <label class="consent wide"><input type="checkbox" name="save_conversation"><span>Optionally save this chat with my enquiry so the ATSFY team can understand the context. This is not required to submit the form.</span></label>
+            <label class="consent wide"><input type="checkbox" name="whatsapp_opt_in"><span>Optional: I agree to receive WhatsApp updates about this enquiry from ATSFY Technologies. I can withdraw this consent at any time.</span></label>
+            <label class="consent wide"><input type="checkbox" name="save_conversation"><span>Optionally save this chat with my enquiry so the ATSFY team can understand the context. This is not required to submit the form.</span></label>
             <div class="wide"><button type="submit">Send enquiry</button><p id="leadMessage" role="status"></p></div>
           </form>
         </details>
@@ -175,7 +176,8 @@ document.getElementById("leadForm").onsubmit = async e => {
  if (!form.reportValidity()) return;
  const data=Object.fromEntries(new FormData(form).entries());
  data.consent=form.elements.consent.checked;
- data.save_conversation=form.elements.save_conversation.checked;\n data.whatsapp_opt_in=form.elements.whatsapp_opt_in.checked;
+ data.save_conversation=form.elements.save_conversation.checked;
+ data.whatsapp_opt_in=form.elements.whatsapp_opt_in.checked;
  data.session_id=sessionId;
  data.transcript=data.save_conversation?hist.slice(-24):[];
  const msg=document.getElementById("leadMessage"), btn=form.querySelector('button[type="submit"]');
@@ -191,7 +193,8 @@ document.getElementById("leadForm").onsubmit = async e => {
    "Requirement: " + (data.need || "Not provided"),
    "Budget: " + (data.budget || "Not provided"),
    "Timeline: " + (data.timeline || "Not provided"),
-   "Contact consent: Yes",\n   "WhatsApp updates consent: " + (data.whatsapp_opt_in ? "Yes" : "No")
+   "Contact consent: Yes",
+   "WhatsApp updates consent: " + (data.whatsapp_opt_in ? "Yes" : "No")
  ].join("\\n");
  btn.disabled=true; btn.textContent="Submitting…"; msg.textContent="Saving your enquiry securely…";
  try {
