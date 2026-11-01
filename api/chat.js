@@ -19,7 +19,7 @@ async function handler(req, res) {
   try {
     const parsed = new URL(origin);
     allowedOrigin = parsed.protocol === "https:" &&
-      (parsed.hostname === "atsfysalesagent.vercel.app" || /^atsfysalesagent-[a-z0-9-]+-ayanpal98s-projects\\.vercel\\.app$/.test(parsed.hostname));
+      (parsed.hostname === "atsfysalesagent.vercel.app" || /^atsfysalesagent-[a-z0-9-]+-ayanpal98s-projects\.vercel\.app$/.test(parsed.hostname));
   } catch {}
   if (!allowedOrigin) return res.status(403).json({ error: "Request origin not allowed." });
 
