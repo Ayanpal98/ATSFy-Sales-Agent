@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 function json(res, status, body) {
   return res.status(status).setHeader("Cache-Control", "no-store").json(body);
 }
@@ -68,7 +69,10 @@ module.exports = async function handler(req, res) {
         } catch (error) { console.warn("Conversation context save failed:", error?.name || "Error"); }
       }
     }
-    return json(res, 201, { ok: true, message: "Thank you. Your enquiry has been shared with ATSFy." });
+    const tokenPayload = Buffer.from(JSON.stringify({ lead_id: leadId, exp: Date.now() + 14 * 24 * 60 * 60 * 1000 })).toString("base64url");
+    const tokenSignature = crypto.createHmac("sha256", key).update(tokenPayload).digest("base64url");
+    const leadToken = tokenPayload + "." + tokenSignature;
+    return json(res, 201, { ok: true, lead_token: leadToken, message: "Thank you. Your enquiry has been shared with ATSFy." });
   } catch (error) {
     console.error("Lead intake error:", error?.name || "Error");
     return json(res, 500, { error: "Something went wrong. Please try again." });
