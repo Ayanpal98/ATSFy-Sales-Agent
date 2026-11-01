@@ -23,7 +23,8 @@ async function handler(req, res) {
   } catch {}
   if (!allowedOrigin) return res.status(403).json({ error: "Request origin not allowed." });
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  // Prefer the canonical name; retain compatibility with the existing Preview secret name.
+  const apiKey = process.env.GEMINI_API_KEY || process.env.atsfyagentKey;
   if (!apiKey) return res.status(503).json({ error: "The AI assistant is not configured yet. Please contact ATSFy on WhatsApp: +91 98625 10477." });
 
   try {
