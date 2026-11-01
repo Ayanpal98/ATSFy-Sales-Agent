@@ -44,7 +44,7 @@ module.exports = async function handler(req, res) {
     const leadId = Array.isArray(inserted) ? inserted[0]?.id : null;
     if (leadId) {
       try {
-        await fetch(url.replace(/\\/$/, "") + "/rest/v1/lead_activities", {
+        await fetch(url.replace(/\/$/, "") + "/rest/v1/lead_activities", {
           method: "POST", headers: { "Content-Type": "application/json", "apikey": key, "Authorization": "Bearer " + key, "Prefer": "return=minimal" },
           body: JSON.stringify({ lead_id: leadId, activity_type: "system", content: "Lead created through the consented ATSFy website enquiry form." }),
           signal: AbortSignal.timeout(8000)
