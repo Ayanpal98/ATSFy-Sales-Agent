@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 function json(res, status, body) {
   return res.status(status).setHeader("Cache-Control", "no-store").json(body);
 }
@@ -23,7 +24,8 @@ module.exports = async function handler(req, res) {
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json(res, 400, { error: "Please enter a valid email address." });
     if (phone && !/^[+0-9() .-]{7,20}$/.test(phone)) return json(res, 400, { error: "Please enter a valid phone number." });
     const company = clean(body.company), industry = clean(body.industry), city = clean(body.city);
-    const need = clean(body.need), budget = clean(body.budget), timeline = clean(body.timeline);\n    const whatsappOptIn = body.whatsapp_opt_in === true;
+    const need = clean(body.need), budget = clean(body.budget), timeline = clean(body.timeline);
+    const whatsappOptIn = body.whatsapp_opt_in === true;
     // Transparent completeness score; this is a prioritisation aid, not an AI prediction.
     const leadScore = Math.min(100, 20 + (company ? 10 : 0) + (industry ? 10 : 0) +
       (city ? 5 : 0) + (need ? 25 : 0) + (budget ? 15 : 0) + (timeline ? 10 : 0) +
@@ -33,7 +35,8 @@ module.exports = async function handler(req, res) {
       industry: industry || null, city: city || null, need: need || null,
       budget_range: budget || null, timeline: timeline || null, lead_score: leadScore,
       source: "website_chat", source_url: "https://atsfysalesagent.vercel.app/",
-      consent_to_contact: true, consent_at: new Date().toISOString(),\n      whatsapp_opt_in: whatsappOptIn, whatsapp_opt_in_at: whatsappOptIn ? new Date().toISOString() : null, status: "new"
+      consent_to_contact: true, consent_at: new Date().toISOString(),
+      whatsapp_opt_in: whatsappOptIn, whatsapp_opt_in_at: whatsappOptIn ? new Date().toISOString() : null, status: "new"
     };
     const response = await fetch(url.replace(/\/$/, "") + "/rest/v1/leads", {
       method: "POST", headers: { "Content-Type": "application/json", "apikey": key, "Authorization": "Bearer " + key, "Prefer": "return=representation" },
@@ -66,7 +69,10 @@ module.exports = async function handler(req, res) {
         } catch (error) { console.warn("Conversation context save failed:", error?.name || "Error"); }
       }
     }
-    return json(res, 201, { ok: true, message: "Thank you. Your enquiry has been shared with ATSFy." });
+    const tokenPayload = Buffer.from(JSON.stringify({ lead_id: leadId, exp: Date.now() + 14 * 24 * 60 * 60 * 1000 })).toString("base64url");
+    const tokenSignature = crypto.createHmac("sha256", key).update(tokenPayload).digest("base64url");
+    const leadToken = tokenPayload + "." + tokenSignature;
+    return json(res, 201, { ok: true, lead_token: leadToken, message: "Thank you. Your enquiry has been shared with ATSFy." });
   } catch (error) {
     console.error("Lead intake error:", error?.name || "Error");
     return json(res, 500, { error: "Something went wrong. Please try again." });
