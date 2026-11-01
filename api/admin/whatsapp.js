@@ -9,6 +9,11 @@ async function admin(req){
  if(!r.ok)return null;const user=await r.json().catch(()=>null);
  return user?.app_metadata?.role==="admin"?{url:url.replace(/\/$/,""),key,token,user}:null;
 }
+async function serviceRest(url,path,options={}){
+ const key=process.env.SUPABASE_SERVICE_ROLE_KEY;if(!key)return null;
+ const r=await fetch(url+"/rest/v1/"+path,{...options,headers:{apikey:key,Authorization:"Bearer "+key,"Content-Type":"application/json",...(options.headers||{})},signal:AbortSignal.timeout(10000)});
+ if(!r.ok)throw new Error("Server-side event log failed.");return r.status===204?null:r.json().catch(()=>null);
+}
 async function rest(s,path,options={}){
  const r=await fetch(s.url+"/rest/v1/"+path,{...options,headers:{apikey:s.key,Authorization:"Bearer "+s.token,"Content-Type":"application/json",...(options.headers||{})},signal:AbortSignal.timeout(12000)});
  const raw=await r.text();let data=null;try{data=raw?JSON.parse(raw):null}catch{}
