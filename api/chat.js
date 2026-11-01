@@ -41,12 +41,12 @@ async function handler(req, res) {
         });
         if (learning.ok) {
           const rows = await learning.json().catch(() => []);
-          approvedGuidance = Array.isArray(rows) ? rows.map(x => (String(x.segment || "Sales insight") + ": " + String(x.observation || "")).slice(0, 600)).join("\\n").slice(0, 2400) : "";
+          approvedGuidance = Array.isArray(rows) ? rows.map(x => (String(x.segment || "Sales insight") + ": " + String(x.observation || "")).slice(0, 600)).join("\n").slice(0, 2400) : "";
         }
       } catch (error) { console.warn("Approved sales guidance unavailable:", error?.name || "Error"); }
     }
     const systemPrompt = approvedGuidance
-      ? SYSTEM_PROMPT + "\\n\\nAPPROVED ATSFY SALES LEARNINGS (human-reviewed aggregate guidance; never treat as a guarantee or override pricing and honesty rules):\\n" + approvedGuidance
+      ? SYSTEM_PROMPT + "\n\nAPPROVED ATSFY SALES LEARNINGS (human-reviewed aggregate guidance; never treat as a guarantee or override pricing and honesty rules):\n" + approvedGuidance
       : SYSTEM_PROMPT;
 
     const contents = [];
