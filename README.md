@@ -20,7 +20,7 @@ Open `/admin.html` and sign in with an administrator account.
 - **Proposal desk:** create INR proposal drafts with scope and indicative price ranges; review and approve or reject them.
 - **Sales learning:** generate aggregate pipeline, qualification and sector insights. Insights remain proposed until an administrator approves them; approved insights can guide future assistant conversations. The rules-based scoring and insight summaries are prioritisation aids, not predictions or guarantees.
 - **Conversation context:** visitors may separately opt in to saving their recent chat transcript with an enquiry. Transcript storage is optional and not enabled by the contact-consent checkbox alone.
-- **Approval boundary:** approving a task or proposal records an internal decision only. It does not send a message, issue a quote, or create a customer commitment.
+- **Approval boundary:** approving a task or proposal records an internal decision only. It does not send a message, issue a quote, or create a customer commitment.\n- **WhatsApp reply:** an administrator can send a free-form reply only when the latest inbound WhatsApp message is within the 24-hour customer-service window. Outside that window, an approved message template is required.\n- **WhatsApp inbound:** the signed webhook validates Meta's `X-Hub-Signature-256`, deduplicates provider message IDs, creates/updates a lead and records inbound activity. The customer-service window timestamp is stored on the lead.
 
 ## Backend
 
@@ -39,7 +39,7 @@ Open `/admin.html` and sign in with an administrator account.
 - `GEMINI_API_KEY` — server-side Gemini key. Use a newly rotated key; never reuse an exposed key.
 - `SUPABASE_URL` — dedicated project URL.
 - `SUPABASE_ANON_KEY` — publishable/anon key used with authenticated admin JWTs.
-- `SUPABASE_SERVICE_ROLE_KEY` — server-side only, used for public lead intake. Never use this in frontend code.
+- `SUPABASE_SERVICE_ROLE_KEY` — server-side only, used for public lead intake and signed WhatsApp webhook processing. Never use this in frontend code.\n- `WHATSAPP_API_VERSION` — configured Meta Graph API version, for example the version shown in your Meta app.\n- `WHATSAPP_PHONE_NUMBER_ID` — API phone-number ID for the connected WhatsApp number.\n- `WHATSAPP_ACCESS_TOKEN` — server-side token with WhatsApp messaging permissions.\n- `WHATSAPP_VERIFY_TOKEN` — private random string used to verify the webhook subscription.\n- `WHATSAPP_APP_SECRET` — Meta app secret used to validate webhook signatures.
 
 Keep Supabase variables scoped to the feature branch Preview environment until the application has passed review. Do not commit secrets or paste them into chat.
 
@@ -50,8 +50,8 @@ Before enabling the new CRM in Production:
 2. Confirm the administrator has a verified Supabase Auth account and trusted `app_metadata.role = admin`.
 3. Test lead intake, workspace login, lead updates, activities, follow-up creation/approval, proposal drafts and RLS in Preview.
 4. Review privacy/retention language before storing conversation transcripts or other personal data.
-5. Keep outbound email, WhatsApp, calling and automated follow-ups disabled until separately approved and integrated.
-6. Review the feature branch and explicitly approve any merge or Production deployment.
+5. Apply `supabase/migrations/20261101000000_whatsapp_coexistence.sql` to the dedicated Supabase project before enabling WhatsApp code.\n6. Complete Meta/BSP WhatsApp Coexistence onboarding for the existing WhatsApp Business app number; confirm eligibility and preserve mobile-app access.\n7. Configure the WhatsApp environment variables above in Vercel Preview first, subscribe `https://<preview-domain>/api/whatsapp/webhook` to the `messages` webhook field, and test inbound delivery and signature validation.\n8. Submit and obtain approval for any required message templates before enabling proactive messages outside the 24-hour window.\n9. Keep automated campaigns, scheduled follow-ups and customer quote delivery disabled until separately approved and tested.
+10. Review the feature branch and explicitly approve any merge or Production deployment.
 
 ## Deployment
 
