@@ -71,9 +71,9 @@ async function handler(req, res) {
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents,
-          generationConfig: { temperature: 0.65, maxOutputTokens: 450, topP: 0.9 }
+          generationConfig: { temperature: 0.65, maxOutputTokens: 220, topP: 0.9, thinkingConfig: { thinkingLevel: "LOW" } }
         }),
-        signal: AbortSignal.timeout(25000)
+        signal: AbortSignal.timeout(50000)
       }
     );
 
@@ -95,6 +95,9 @@ async function handler(req, res) {
     return res.status(200).json({ reply });
   } catch (error) {
     console.error("Chat handler error:", error?.name || "Error");
+    if (error?.name === "TimeoutError" || error?.name === "AbortError") {
+      return res.status(504).json({ error: "The assistant is taking longer than expected. Please try again in a moment." });
+    }
     return res.status(500).json({ error: "Something went wrong. Please try again." });
   }
 }
