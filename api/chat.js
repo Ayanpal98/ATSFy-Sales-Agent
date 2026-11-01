@@ -1,6 +1,6 @@
-const MODEL = "gemini-2.5-flash";
-const MAX_HISTORY = 24;
-const MAX_MESSAGE_CHARS = 4000;
+const MODEL = "gemini-3.5-flash-lite";
+const MAX_HISTORY = 12;
+const MAX_MESSAGE_CHARS = 2000;
 
 const SYSTEM_PROMPT = `You are the website sales assistant for ATSFy Technologies, an AI venture studio in Agartala, Tripura, India. Contact: atsfy@atsfy.tech, WhatsApp +91 98625 10477.
 WHAT WE SELL: business websites, e-commerce sites, mobile apps/PWAs, AI chatbots, AI call manager, business automation, online store automation, business analytics, AI Business Manager (Starter/Growth/Pro), startup/DPIIT registration guidance, and AI/digital skill workshops.
@@ -71,15 +71,15 @@ async function handler(req, res) {
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents,
-          generationConfig: { temperature: 0.65, maxOutputTokens: 450, topP: 0.9 }
+          generationConfig: { temperature: 0.5, maxOutputTokens: 180, topP: 0.85 }
         }),
-        signal: AbortSignal.timeout(25000)
+        signal: AbortSignal.timeout(15000)
       }
     );
 
     const payload = await upstream.json().catch(() => ({}));
     if (!upstream.ok) {
-      console.error("Gemini API error:", upstream.status, payload?.error?.status || "unknown");
+      console.error("Gemini API error:", upstream.status, payload?.error?.status || "unknown", String(payload?.error?.message || "No provider message").slice(0, 300));
       return res.status(upstream.status === 429 ? 429 : 502).json({
         error: upstream.status === 429
           ? "The assistant is busy right now. Please wait a moment and try again."
@@ -95,6 +95,9 @@ async function handler(req, res) {
     return res.status(200).json({ reply });
   } catch (error) {
     console.error("Chat handler error:", error?.name || "Error");
+    if (error?.name === "TimeoutError" || error?.name === "AbortError") {
+      return res.status(504).json({ error: "The assistant is taking longer than expected. Please try again in a moment." });
+    }
     return res.status(500).json({ error: "Something went wrong. Please try again." });
   }
 }
