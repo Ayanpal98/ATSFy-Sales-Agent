@@ -30,7 +30,7 @@ async function processMessage(m,profileName){
  const seen=await db("whatsapp_message_events?provider_message_id=eq."+encodeURIComponent(id)+"&select=id");
  if(Array.isArray(seen)&&seen.length)return;
  const leads=await db("leads?select=id,phone,name&order=created_at.desc&limit=500");
- const lead=(Array.isArray(leads)?leads:[]).find(x=>phoneDigits(x.phone)===from);
+ const lead=(Array.isArray(leads)?leads:[]).find(x=>{const existing=phoneDigits(x.phone);return existing===from||(existing.length>=10&&from.length>=10&&existing.slice(-10)===from.slice(-10));});
  let leadId=lead?.id||null;
  if(!leadId){
   const inserted=await db("leads",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({
