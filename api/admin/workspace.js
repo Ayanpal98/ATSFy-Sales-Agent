@@ -21,13 +21,14 @@ module.exports=async function handler(req,res){
  try{
   const s=await auth(req);if(!s)return json(res,401,{error:"Administrator authentication required."});
   if(req.method==="GET"){
-   const [leads,activities,followups,proposals]=await Promise.all([
+   const [leads,activities,followups,proposals,conversations]=await Promise.all([
     rest(s,"leads?select=id,created_at,updated_at,name,email,phone,company,industry,city,need,budget_range,timeline,source,status,lead_score,assigned_to,last_contact_at,next_follow_up_at,notes,lost_reason&order=created_at.desc&limit=300"),
     rest(s,"lead_activities?select=id,lead_id,activity_type,direction,content,outcome,actor_id,created_at&order=created_at.desc&limit=500"),
     rest(s,"followup_tasks?select=id,lead_id,due_at,channel,message_draft,status,approved_by,approved_at,sent_at,created_at&order=due_at.asc&limit=300"),
-    rest(s,"proposals?select=id,lead_id,title,scope,price_min,price_max,currency,status,approved_by,approved_at,created_at&order=created_at.desc&limit=200")
+    rest(s,"proposals?select=id,lead_id,title,scope,price_min,price_max,currency,status,approved_by,approved_at,created_at&order=created_at.desc&limit=200"),
+    rest(s,"conversations?select=id,lead_id,channel,summary,transcript,created_at&order=created_at.desc&limit=200")
    ]);
-   return json(res,200,{leads,activities,followups,proposals});
+   return json(res,200,{leads,activities,followups,proposals,conversations});
   }
   const b=parseBody(req),kind=clean(b.kind,30);
   if(req.method==="POST"){
