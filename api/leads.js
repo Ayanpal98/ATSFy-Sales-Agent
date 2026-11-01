@@ -30,10 +30,27 @@ module.exports = async function handler(req, res) {
       consent_to_contact: true, consent_at: new Date().toISOString(), status: "new"
     };
     const response = await fetch(url.replace(/\/$/, "") + "/rest/v1/leads", {
-      method: "POST", headers: { "Content-Type": "application/json", "apikey": key, "Authorization": "Bearer " + key, "Prefer": "return=minimal" },
+      method: "POST", headers: { "Content-Type": "application/json", "apikey": key, "Authorization": "Bearer " + key, "Prefer": "return=representation" },
       body: JSON.stringify(record), signal: AbortSignal.timeout(12000)
     });
     if (!response.ok) { console.error("Lead storage failed:", response.status); return json(res, 502, { error: "We could not save your enquiry. Please contact ATSFy on WhatsApp." }); }
+    const inserted = await response.json().catch(() => []);
+    const leadId = Array.isArray(inserted) ? inserted[0]?.id : null;
+    if (leadId && body.save_conversation === true && Array.isArray(body.transcript)) {
+      const sessionId = typeof body.session_id === "string" && /^[0-9a-f-]{36}$/i.test(body.session_id) ? body.session_id : null;
+      const transcript = body.transcript.slice(-24).filter(item => item && ["user","model"].includes(item.role) && typeof item.content === "string")
+        .map(item => ({ role: item.role, content: item.content.trim().slice(0, 4000) })).filter(item => item.content);
+      if (sessionId && transcript.length) {
+        try {
+          const saved = await fetch(url.replace(/\/$/, "") + "/rest/v1/conversations", {
+            method: "POST", headers: { "Content-Type": "application/json", "apikey": key, "Authorization": "Bearer " + key, "Prefer": "return=minimal" },
+            body: JSON.stringify({ lead_id: leadId, session_id: sessionId, channel: "website_chat", transcript }),
+            signal: AbortSignal.timeout(10000)
+          });
+          if (!saved.ok) console.warn("Conversation context was not saved:", saved.status);
+        } catch (error) { console.warn("Conversation context save failed:", error?.name || "Error"); }
+      }
+    }
     return json(res, 201, { ok: true, message: "Thank you. Your enquiry has been shared with ATSFy." });
   } catch (error) {
     console.error("Lead intake error:", error?.name || "Error");
