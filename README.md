@@ -14,10 +14,12 @@ ATSFy's AI-assisted sales and lead-management workspace. Public sales conversati
 Open `/admin.html` and sign in with an administrator account.
 
 - **Overview:** pipeline totals, stage distribution, recent leads and pending follow-ups.
-- **Lead pipeline:** search and filter prospects, review contact and requirement details, update stages, set next follow-up dates and maintain internal notes.
+- **Lead pipeline:** search and filter prospects, review contact and requirement details, view a transparent completeness score, update stages, set next follow-up dates and maintain internal notes.
 - **Activity timeline:** log notes, calls, email discussions, WhatsApp discussions and meetings.
 - **Follow-up planner:** create dated tasks with internal briefs or draft messages; tasks require an administrator's explicit approval.
 - **Proposal desk:** create INR proposal drafts with scope and indicative price ranges; review and approve or reject them.
+- **Sales learning:** generate aggregate pipeline, qualification and sector insights. Insights remain proposed until an administrator approves them; approved insights can guide future assistant conversations. The rules-based scoring and insight summaries are prioritisation aids, not predictions or guarantees.
+- **Conversation context:** visitors may separately opt in to saving their recent chat transcript with an enquiry. Transcript storage is optional and not enabled by the contact-consent checkbox alone.
 - **Approval boundary:** approving a task or proposal records an internal decision only. It does not send a message, issue a quote, or create a customer commitment.
 
 ## Backend
@@ -27,6 +29,8 @@ Open `/admin.html` and sign in with an administrator account.
 - Row-level security is enabled. Authenticated access is restricted to users whose trusted `app_metadata.role` is `admin`.
 - Public lead intake runs server-side with the Supabase service key. The service key must never be exposed in browser code.
 - Admin reads and updates use the signed-in user's JWT and RLS.
+- Lead completeness score is calculated from the presence of company, industry, location, requirement, budget, timeline and contact fields; it is not an AI score.
+- Stage changes and meaningful contact activities are added to the lead activity history.
 - `POST /api/admin/workspace` creates activities, follow-up tasks and proposal drafts; `GET` loads the workspace; `PATCH` updates approved CRM fields.
 - The SQL migrations in `supabase/migrations` document the schema and hardening.
 
