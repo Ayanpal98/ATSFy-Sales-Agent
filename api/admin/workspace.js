@@ -1,0 +1,106 @@
+const STATUSES = new Set(["new","contacted","qualified","proposal","negotiation","won","lost","not_interested"]);
+const CHANNELS = new Set(["whatsapp","email","call","internal"]);
+function json(res,status,body){return res.status(status).setHeader("Cache-Control","no-store").json(body)}
+function parseBody(req){return typeof req.body==="string"?JSON.parse(req.body):req.body||{}}
+function clean(v,max=2000){return typeof v==="string"?v.trim().slice(0,max):""}
+async function auth(req){
+ const url=process.env.SUPABASE_URL,key=process.env.SUPABASE_ANON_KEY,header=String(req.headers.authorization||"");
+ const token=header.startsWith("Bearer ")?header.slice(7):"";
+ if(!url||!key||!token)return null;
+ const r=await fetch(url.replace(/\/$/,"")+"/auth/v1/user",{headers:{apikey:key,Authorization:"Bearer "+token},signal:AbortSignal.timeout(10000)});
+ if(!r.ok)return null;const user=await r.json().catch(()=>null);
+ return user?.app_metadata?.role==="admin"?{url:url.replace(/\/$/,""),key,token,user}:null;
+}
+async function rest(s,path,options={}){
+ const r=await fetch(s.url+"/rest/v1/"+path,{...options,headers:{apikey:s.key,Authorization:"Bearer "+s.token,"Content-Type":"application/json",...(options.headers||{})},signal:AbortSignal.timeout(12000)});
+ const raw=await r.text();let data=null;try{data=raw?JSON.parse(raw):null}catch{}
+ if(!r.ok){const e=new Error("Database request failed.");e.status=r.status;throw e}return data;
+}
+module.exports=async function handler(req,res){
+ if(!["GET","POST","PATCH"].includes(req.method)){res.setHeader("Allow","GET, POST, PATCH");return json(res,405,{error:"Method not allowed."})}
+ try{
+  const s=await auth(req);if(!s)return json(res,401,{error:"Administrator authentication required."});
+  if(req.method==="GET"){
+   const [leads,activities,followups,proposals,conversations,insights]=await Promise.all([
+    rest(s,"leads?select=id,created_at,updated_at,name,email,phone,company,industry,city,need,budget_range,timeline,source,status,lead_score,assigned_to,last_contact_at,next_follow_up_at,notes,lost_reason&order=created_at.desc&limit=300"),
+    rest(s,"lead_activities?select=id,lead_id,activity_type,direction,content,outcome,actor_id,created_at&order=created_at.desc&limit=500"),
+    rest(s,"followup_tasks?select=id,lead_id,due_at,channel,message_draft,status,approved_by,approved_at,sent_at,created_at&order=due_at.asc&limit=300"),
+    rest(s,"proposals?select=id,lead_id,title,scope,price_min,price_max,currency,status,approved_by,approved_at,created_at&order=created_at.desc&limit=200"),
+    rest(s,"conversations?select=id,lead_id,channel,summary,transcript,created_at&order=created_at.desc&limit=200"),
+    rest(s,"agent_insights?select=id,insight_type,segment,observation,evidence_count,confidence,status,reviewed_by,reviewed_at,created_at&order=created_at.desc&limit=200")
+   ]);
+   return json(res,200,{leads,activities,followups,proposals,conversations,insights});
+  }
+  const b=parseBody(req),kind=clean(b.kind,30);
+  if(req.method==="POST"){
+   if(kind==="insights"){
+    const rows=await rest(s,"leads?select=status,lead_score,industry,city,need,budget_range,timeline&limit=500");
+    if(!Array.isArray(rows)||!rows.length)return json(res,400,{error:"Add a few leads before generating sales insights."});
+    const total=rows.length,hot=rows.filter(x=>["qualified","proposal","negotiation"].includes(x.status));
+    const low=rows.filter(x=>Number(x.lead_score||0)<50),scores=rows.map(x=>Number(x.lead_score||0));
+    const average=Math.round(scores.reduce((a,v)=>a+v,0)/Math.max(1,scores.length));
+    const sectors={};for(const row of rows){const sector=clean(row.industry,80);if(sector)sectors[sector]=(sectors[sector]||0)+1}
+    const topSector=Object.entries(sectors).sort((a,b)=>b[1]-a[1])[0];
+    const insights=[
+     {insight_type:"pipeline_attention",segment:"Qualified pipeline",observation:hot.length+" of "+total+" recorded leads are in qualified, proposal or negotiation stages. Review these active opportunities and record a dated next step before increasing top-of-funnel activity.",evidence_count:total,confidence:0.85},
+     {insight_type:"qualification_quality",segment:"Lead completeness",observation:low.length+" of "+total+" leads have a completeness score below 50/100; the average completeness score is "+average+"/100. Ask one focused follow-up question to capture missing budget, timeline or requirement details.",evidence_count:total,confidence:0.9}
+    ];
+    if(topSector)insights.push({insight_type:"sector_signal",segment:topSector[0],observation:topSector[0]+" is the most represented industry in the current lead set ("+topSector[1]+" of "+total+"). Consider testing a sector-specific landing message, then compare qualified-lead rates before changing the sales playbook.",evidence_count:topSector[1],confidence:Math.min(0.95,0.55+topSector[1]/Math.max(1,total)*0.4)});
+    const saved=[];for(const insight of insights){const row=await rest(s,"agent_insights",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({...insight,status:"proposed"})});if(Array.isArray(row)&&row[0])saved.push(row[0])}
+    await rest(s,"agent_runs",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({run_type:"sales_insights",status:"succeeded",input_summary:"Aggregate analysis of "+total+" leads; no names or contact details used.",output_summary:"Generated "+saved.length+" reviewable insights." ,started_at:new Date().toISOString(),finished_at:new Date().toISOString()})});
+    return json(res,201,{insights:saved,message:"Insights generated for human review. Nothing changes in the assistant until you approve an insight."});
+   }
+   const leadId=clean(b.lead_id,36);if(!/^[0-9a-f-]{36}$/i.test(leadId))return json(res,400,{error:"A valid lead is required."});
+   if(kind==="activity"){
+    const content=clean(b.content,4000),type=clean(b.activity_type,30)||"note";
+    if(!content||!["note","call","email","whatsapp","meeting"].includes(type))return json(res,400,{error:"Enter a note or valid activity."});
+    const row=await rest(s,"lead_activities",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({lead_id:leadId,activity_type:type,direction:b.direction==="inbound"||b.direction==="outbound"?b.direction:null,content,actor_id:s.user.id})});
+    if(["call","email","whatsapp","meeting"].includes(type)) await rest(s,"leads?id=eq."+encodeURIComponent(leadId),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({last_contact_at:new Date().toISOString()})});
+    return json(res,201,{item:Array.isArray(row)?row[0]:row});
+   }
+   if(kind==="followup"){
+    const due=new Date(b.due_at);const channel=CHANNELS.has(b.channel)?b.channel:"internal";
+    if(!Number.isFinite(due.getTime())||due.getTime()<Date.now()-60000)return json(res,400,{error:"Choose a valid future follow-up date and time."});
+    const row=await rest(s,"followup_tasks",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({lead_id:leadId,due_at:due.toISOString(),channel,message_draft:clean(b.message_draft,2000)||null,status:"pending"})});
+    return json(res,201,{item:Array.isArray(row)?row[0]:row});
+   }
+   if(kind==="proposal"){
+    const title=clean(b.title,180);const min=b.price_min===""||b.price_min==null?null:Number(b.price_min),max=b.price_max===""||b.price_max==null?null:Number(b.price_max);
+    if(!title||((min!==null&&(!Number.isFinite(min)||min<0))||(max!==null&&(!Number.isFinite(max)||max<0)))||(min!==null&&max!==null&&max<min))return json(res,400,{error:"Enter a title and valid INR price range."});
+    const scope={description:clean(b.scope,4000),deliverables:Array.isArray(b.deliverables)?b.deliverables.map(x=>clean(x,180)).filter(Boolean).slice(0,20):[],terms:"Draft only. Subject to ATSFy review and confirmation."};
+    const row=await rest(s,"proposals",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({lead_id:leadId,title,scope,price_min:min,price_max:max,currency:"INR",status:"draft"})});
+    return json(res,201,{item:Array.isArray(row)?row[0]:row});
+   }
+   return json(res,400,{error:"Unsupported workspace action."});
+  }
+  const id=clean(b.id,36);if(!/^[0-9a-f-]{36}$/i.test(id))return json(res,400,{error:"A valid record ID is required."});
+  if(kind==="lead"){
+   const current=await rest(s,"leads?id=eq."+encodeURIComponent(id)+"&select=status");
+   if(!Array.isArray(current)||!current.length)return json(res,404,{error:"Lead not found."});
+   const previousStatus=current[0].status;
+   const patch={};if(typeof b.status==="string"&&STATUSES.has(b.status))patch.status=b.status;
+   if(typeof b.notes==="string")patch.notes=clean(b.notes,5000)||null;
+   if(b.next_follow_up_at===null)patch.next_follow_up_at=null;else if(typeof b.next_follow_up_at==="string"&&Number.isFinite(new Date(b.next_follow_up_at).getTime()))patch.next_follow_up_at=new Date(b.next_follow_up_at).toISOString();
+   if(!Object.keys(patch).length)return json(res,400,{error:"No valid lead changes supplied."});
+   await rest(s,"leads?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify(patch)});
+   if(patch.status&&patch.status!==previousStatus) await rest(s,"lead_activities",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({lead_id:id,activity_type:"stage_change",content:"Stage changed from "+previousStatus.replaceAll("_"," ")+" to "+patch.status.replaceAll("_"," ")+".",actor_id:s.user.id})});
+   return json(res,200,{ok:true});
+  }
+  if(kind==="insight"){
+   if(!["approved","rejected"].includes(b.status))return json(res,400,{error:"Choose approve or reject."});
+   await rest(s,"agent_insights?id=eq."+encodeURIComponent(id)+"&status=eq.proposed",{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:b.status,reviewed_by:s.user.id,reviewed_at:new Date().toISOString()})});
+   return json(res,200,{ok:true});
+  }
+  if(kind==="followup"){
+   if(!["approved","cancelled"].includes(b.status))return json(res,400,{error:"Follow-ups can only be approved or cancelled here."});
+   await rest(s,"followup_tasks?id=eq."+encodeURIComponent(id)+"&status=eq.pending",{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:b.status,approved_by:b.status==="approved"?s.user.id:null,approved_at:b.status==="approved"?new Date().toISOString():null})});
+   return json(res,200,{ok:true});
+  }
+  if(kind==="proposal"){
+   if(!["pending_approval","approved","rejected"].includes(b.status))return json(res,400,{error:"Invalid proposal review action."});
+   await rest(s,"proposals?id=eq."+encodeURIComponent(id)+"&status=in.(draft,pending_approval)",{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:b.status,approved_by:b.status==="approved"?s.user.id:null,approved_at:b.status==="approved"?new Date().toISOString():null})});
+   return json(res,200,{ok:true});
+  }
+  return json(res,400,{error:"Unsupported workspace action."});
+ }catch(error){console.error("Workspace API error:",error?.status||error?.name||"Error");return json(res,error?.status===400?400:500,{error:"The CRM workspace could not complete that request. Please refresh and try again."})}
+};

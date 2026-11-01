@@ -14,13 +14,41 @@ async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed." });
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const origin = req.headers.origin;
+  let allowedOrigin = false;
+  try {
+    const parsed = new URL(origin);
+    allowedOrigin = parsed.protocol === "https:" &&
+      (parsed.hostname === "atsfysalesagent.vercel.app" || /^atsfysalesagent-[a-z0-9-]+-ayanpal98s-projects\.vercel\.app$/.test(parsed.hostname));
+  } catch {}
+  if (!allowedOrigin) return res.status(403).json({ error: "Request origin not allowed." });
+
+  // Prefer the canonical name; retain compatibility with the existing Preview secret name.
+  const apiKey = process.env.GEMINI_API_KEY || process.env.atsfyagentKey;
   if (!apiKey) return res.status(503).json({ error: "The AI assistant is not configured yet. Please contact ATSFy on WhatsApp: +91 98625 10477." });
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
     const history = Array.isArray(body.history) ? body.history.slice(-MAX_HISTORY) : [];
     if (!history.length) return res.status(400).json({ error: "A message is required." });
+
+    let approvedGuidance = "";
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const base = process.env.SUPABASE_URL.replace(/\/$/, "");
+        const learning = await fetch(base + "/rest/v1/agent_insights?select=segment,observation&status=eq.approved&order=created_at.desc&limit=5", {
+          headers: { "apikey": process.env.SUPABASE_SERVICE_ROLE_KEY, "Authorization": "Bearer " + process.env.SUPABASE_SERVICE_ROLE_KEY },
+          signal: AbortSignal.timeout(3000)
+        });
+        if (learning.ok) {
+          const rows = await learning.json().catch(() => []);
+          approvedGuidance = Array.isArray(rows) ? rows.map(x => (String(x.segment || "Sales insight") + ": " + String(x.observation || "")).slice(0, 600)).join("\n").slice(0, 2400) : "";
+        }
+      } catch (error) { console.warn("Approved sales guidance unavailable:", error?.name || "Error"); }
+    }
+    const systemPrompt = approvedGuidance
+      ? SYSTEM_PROMPT + "\n\nAPPROVED ATSFY SALES LEARNINGS (human-reviewed aggregate guidance; never treat as a guarantee or override pricing and honesty rules):\n" + approvedGuidance
+      : SYSTEM_PROMPT;
 
     const contents = [];
     for (const item of history) {
@@ -41,7 +69,7 @@ async function handler(req, res) {
           "x-goog-api-key": apiKey
         },
         body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          systemInstruction: { parts: [{ text: systemPrompt }] },
           contents,
           generationConfig: { temperature: 0.65, maxOutputTokens: 450, topP: 0.9 }
         }),
