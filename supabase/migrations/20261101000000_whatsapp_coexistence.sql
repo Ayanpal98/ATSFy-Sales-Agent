@@ -17,7 +17,7 @@ create table if not exists public.whatsapp_message_events (
 );
 
 alter table public.whatsapp_message_events enable row level security;
-grant select on public.whatsapp_message_events to authenticated;
+grant select on public.whatsapp_message_events to authenticated;\ngrant all on public.whatsapp_message_events to service_role;
 
 drop policy if exists "Admins can read WhatsApp message events" on public.whatsapp_message_events;
 create policy "Admins can read WhatsApp message events"
