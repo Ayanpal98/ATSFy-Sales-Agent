@@ -146,12 +146,12 @@ function renderSuggestions(items) {
   chips.style.display = "flex";
 }
 renderSuggestions(starterPrompts);
-[["Draft my quote","Please prepare a draft quote based on what we have discussed."],
- ["Lead summary","Give me a short lead summary of this conversation: name, phone, business, need, budget, timeline, next step."]]
-.forEach(([label, prompt]) => {
+[["Draft an estimate","Prepare an indicative estimate from the details I have shared. If important information is missing, ask me one question at a time before drafting. Use only ATSFY's verified starting-price guidance, clearly mark it “Draft — pending ATSFY confirmation”, and never invent scope, price, timeline or terms.", false],
+ ["Prepare enquiry summary","Create a concise enquiry summary using only facts I have shared. Include business, requirement, location, budget, timeline, contact details if volunteered, missing information and next step. Mark unknowns as “Not shared”; do not invent details.", true]]
+.forEach(([label, prompt, shareToWhatsApp]) => {
   const b = document.createElement("button");
   b.className = "chip"; b.type = "button"; b.textContent = label;
-  b.onclick = () => send(prompt, label === "Lead summary"); tools.appendChild(b);
+  b.onclick = () => send(prompt, shareToWhatsApp); tools.appendChild(b);
 });
 
 async function send(text, shareToWhatsApp = false) {
@@ -196,6 +196,9 @@ document.getElementById("leadForm").onsubmit = async e => {
  const form=e.currentTarget;
  if (!form.reportValidity()) return;
  const data=Object.fromEntries(new FormData(form).entries());
+ if(!String(data.email||"").trim()&&!String(data.phone||"").trim()){const msg=document.getElementById("leadMessage");msg.textContent="Please add either a phone/WhatsApp number or an email address so our team can reach you.";form.elements.phone.focus();return;}
+ const chatContext=hist.filter(item=>item.role==="user").map(item=>item.content).filter(Boolean).slice(-8).join(" | ").slice(0,500);
+ if(!String(data.need||"").trim()&&chatContext)data.need=chatContext;
  data.consent=form.elements.consent.checked;
  data.save_conversation=form.elements.save_conversation.checked;
  data.whatsapp_opt_in=form.elements.whatsapp_opt_in.checked;
