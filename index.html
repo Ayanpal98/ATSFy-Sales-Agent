@@ -157,7 +157,8 @@ renderSuggestions(starterPrompts);
 async function send(text, shareToWhatsApp = false) {
   const message = String(text || "").trim();
   if (busy || !message) return;
-  busy = true; go.disabled = true;\n  [...chips.querySelectorAll("button")].forEach(button => button.disabled = true);
+  busy = true; go.disabled = true;
+  [...chips.querySelectorAll("button")].forEach(button => button.disabled = true);
   add("user", message);
   hist.push({ role: "user", content: message });
   inp.value = "";
@@ -172,7 +173,10 @@ async function send(text, shareToWhatsApp = false) {
     if (!response.ok) throw new Error(data.error || "The assistant is temporarily unavailable.");
     const answer = String(data.reply || "I’m sorry, I couldn’t prepare a response. Please try again.");
     hist.push({ role: "model", content: answer });
-    bubble.classList.remove("typing"); bubble.innerHTML = fmt(answer);\n    const visitorTurns = hist.filter(item => item.role === "user").length;\n    if (visitorTurns <= 1) renderSuggestions(["What would you recommend?","What might this cost?","Can you show me an example?","I have a different idea"]);\n    else if (visitorTurns <= 3) renderSuggestions(["What would the first step be?","What details do you need from me?","Can you give me an indicative price?","I’d like to speak with your team"]);\n    else renderSuggestions(["Prepare a draft estimate","Summarise what we’ve discussed","What happens after this?","I have one more question"]);
+    bubble.classList.remove("typing"); bubble.innerHTML = fmt(answer);
+    const visitorTurns = hist.filter(item => item.role === "user").length;
+    if (visitorTurns <= 1) renderSuggestions(["What would you recommend?","What might this cost?","Can you show me an example?","I have a different idea"]);
+    else if (visitorTurns <= 3) renderSuggestions(["What would the first step be?","What details do you need from me?","Can you give me an indicative price?","I’d like to speak with your team"]);\n    else renderSuggestions(["Prepare a draft estimate","Summarise what we’ve discussed","What happens after this?","I have one more question"]);
     const visitorQuestion = hist.filter(item => item.role === "user").slice(-1)[0]?.content || message;
     if (shareToWhatsApp) addWhatsAppLink(bubble, answer, "Send lead summary to ATSFy on WhatsApp →");
     else addWhatsAppLink(bubble, "Website enquiry from ATSFy Sales Agent:\\n\\nVisitor question: " + visitorQuestion + "\\n\\nAssistant response: " + answer);
@@ -180,7 +184,8 @@ async function send(text, shareToWhatsApp = false) {
     bubble.textContent = error.message || "Sorry, something went wrong. Please contact ATSFy on WhatsApp: +91 98625 10477.";
     hist.pop();
   } finally {
-    busy = false; go.disabled = false;\n    [...chips.querySelectorAll("button")].forEach(button => button.disabled = false); inp.focus();
+    busy = false; go.disabled = false;
+    [...chips.querySelectorAll("button")].forEach(button => button.disabled = false); inp.focus();
   }
 }
 document.getElementById("f").onsubmit = e => { e.preventDefault(); send(inp.value); };
