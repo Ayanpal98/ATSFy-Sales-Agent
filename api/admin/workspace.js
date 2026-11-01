@@ -37,6 +37,7 @@ module.exports=async function handler(req,res){
     const content=clean(b.content,4000),type=clean(b.activity_type,30)||"note";
     if(!content||!["note","call","email","whatsapp","meeting"].includes(type))return json(res,400,{error:"Enter a note or valid activity."});
     const row=await rest(s,"lead_activities",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({lead_id:leadId,activity_type:type,direction:b.direction==="inbound"||b.direction==="outbound"?b.direction:null,content,actor_id:s.user.id})});
+    if(["call","email","whatsapp","meeting"].includes(type)) await rest(s,"leads?id=eq."+encodeURIComponent(leadId),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({last_contact_at:new Date().toISOString()})});
     return json(res,201,{item:Array.isArray(row)?row[0]:row});
    }
    if(kind==="followup"){
@@ -56,11 +57,15 @@ module.exports=async function handler(req,res){
   }
   const id=clean(b.id,36);if(!/^[0-9a-f-]{36}$/i.test(id))return json(res,400,{error:"A valid record ID is required."});
   if(kind==="lead"){
+   const current=await rest(s,"leads?id=eq."+encodeURIComponent(id)+"&select=status");
+   if(!Array.isArray(current)||!current.length)return json(res,404,{error:"Lead not found."});
+   const previousStatus=current[0].status;
    const patch={};if(typeof b.status==="string"&&STATUSES.has(b.status))patch.status=b.status;
    if(typeof b.notes==="string")patch.notes=clean(b.notes,5000)||null;
    if(b.next_follow_up_at===null)patch.next_follow_up_at=null;else if(typeof b.next_follow_up_at==="string"&&Number.isFinite(new Date(b.next_follow_up_at).getTime()))patch.next_follow_up_at=new Date(b.next_follow_up_at).toISOString();
    if(!Object.keys(patch).length)return json(res,400,{error:"No valid lead changes supplied."});
    await rest(s,"leads?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify(patch)});
+   if(patch.status&&patch.status!==previousStatus) await rest(s,"lead_activities",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({lead_id:id,activity_type:"stage_change",content:"Stage changed from "+previousStatus.replaceAll("_"," ")+" to "+patch.status.replaceAll("_"," ")+".",actor_id:s.user.id})});
    return json(res,200,{ok:true});
   }
   if(kind==="followup"){
