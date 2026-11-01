@@ -1,6 +1,6 @@
-const MODEL = "gemini-3.8-flash";
-const MAX_HISTORY = 24;
-const MAX_MESSAGE_CHARS = 4000;
+const MODEL = "gemini-3.5-flash-lite";
+const MAX_HISTORY = 12;
+const MAX_MESSAGE_CHARS = 2000;
 
 const SYSTEM_PROMPT = `You are the website sales assistant for ATSFy Technologies, an AI venture studio in Agartala, Tripura, India. Contact: atsfy@atsfy.tech, WhatsApp +91 98625 10477.
 WHAT WE SELL: business websites, e-commerce sites, mobile apps/PWAs, AI chatbots, AI call manager, business automation, online store automation, business analytics, AI Business Manager (Starter/Growth/Pro), startup/DPIIT registration guidance, and AI/digital skill workshops.
@@ -71,9 +71,9 @@ async function handler(req, res) {
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
           contents,
-          generationConfig: { temperature: 0.65, maxOutputTokens: 220, topP: 0.9, thinkingConfig: { thinkingLevel: "LOW" } }
+          generationConfig: { temperature: 0.5, maxOutputTokens: 180, topP: 0.85 }
         }),
-        signal: AbortSignal.timeout(50000)
+        signal: AbortSignal.timeout(15000)
       }
     );
 
