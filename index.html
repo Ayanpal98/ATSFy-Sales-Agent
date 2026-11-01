@@ -155,7 +155,7 @@ document.getElementById("leadForm").onsubmit = async e => {
  btn.disabled=true; msg.textContent="Sending securely…";
  try { const r=await fetch("/api/leads",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
  const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||"Unable to submit enquiry.");
- msg.textContent=d.message||"Thank you. ATSFy has received your enquiry."; form.reset(); sessionId=makeSessionId();
+ msg.textContent=d.message||"Thank you. ATSFy has received your enquiry."; form.reset(); sessionId=makeSessionId(); hist.length=0; log.innerHTML=""; add("assistant","Thanks — your enquiry has been submitted. If you have another question, I’m here to help.");
  } catch(err){msg.textContent=err.message;} finally{btn.disabled=false;}
 };
 </script>
