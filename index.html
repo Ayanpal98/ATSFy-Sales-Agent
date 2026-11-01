@@ -198,6 +198,7 @@ function addSaveProposalAction(container) {
 }
 async function send(text, shareToWhatsApp = false, action = "") {
   const message = String(text || "").trim();
+  const estimateRequest = action === "estimate" || /(?:prepare|draft|create).{0,30}estimate/i.test(message);
   if (busy || !message) return;
   busy = true; go.disabled = true;
   [...chips.querySelectorAll("button")].forEach(button => button.disabled = true);
@@ -216,7 +217,7 @@ async function send(text, shareToWhatsApp = false, action = "") {
     const answer = String(data.reply || "I’m sorry, I couldn’t prepare a response. Please try again.");
     hist.push({ role: "model", content: answer });
     bubble.classList.remove("typing"); bubble.innerHTML = fmt(answer);
-    if (action === "estimate") { latestEstimateDraft = answer; addSaveProposalAction(bubble); }
+    if (estimateRequest) { latestEstimateDraft = answer; addSaveProposalAction(bubble); }
     const visitorTurns = hist.filter(item => item.role === "user").length;
     if (visitorTurns <= 1) renderSuggestions(["What would you recommend?","What might this cost?","Can you show me an example?","I have a different idea"]);
     else if (visitorTurns <= 3) renderSuggestions(["What would the first step be?","What details do you need from me?","Can you give me an indicative price?","I’d like to speak with your team"]);
