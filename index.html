@@ -92,6 +92,14 @@ let busy = false;
 
 const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
 const fmt = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
+function addWhatsAppLink(container, message, label = "Send this query to ATSFy on WhatsApp →") {
+  const a = document.createElement("a");
+  a.className = "wa"; a.target = "_blank"; a.rel = "noopener noreferrer";
+  a.textContent = label;
+  a.href = "https://wa.me/" + WA + "?text=" + encodeURIComponent(message);
+  container.appendChild(document.createElement("br"));
+  container.appendChild(a);
+}
 function add(role, text) {
   const d = document.createElement("div");
   d.className = "m " + (role === "user" ? "me" : "bot");
@@ -134,13 +142,9 @@ async function send(text, shareToWhatsApp = false) {
     const answer = String(data.reply || "I’m sorry, I couldn’t prepare a response. Please try again.");
     hist.push({ role: "model", content: answer });
     bubble.innerHTML = fmt(answer);
-    if (shareToWhatsApp) {
-      const a = document.createElement("a");
-      a.className = "wa"; a.target = "_blank"; a.rel = "noopener";
-      a.textContent = "Send lead summary to ATSFy on WhatsApp →";
-      a.href = "https://wa.me/" + WA + "?text=" + encodeURIComponent(answer);
-      bubble.appendChild(document.createElement("br")); bubble.appendChild(a);
-    }
+    const visitorQuestion = hist.filter(item => item.role === "user").slice(-1)[0]?.content || message;
+    if (shareToWhatsApp) addWhatsAppLink(bubble, answer, "Send lead summary to ATSFy on WhatsApp →");
+    else addWhatsAppLink(bubble, "Website enquiry from ATSFy Sales Agent:\\n\\nVisitor question: " + visitorQuestion + "\\n\\nAssistant response: " + answer);
   } catch (error) {
     bubble.textContent = error.message || "Sorry, something went wrong. Please contact ATSFy on WhatsApp: +91 98625 10477.";
     hist.pop();
@@ -150,13 +154,43 @@ async function send(text, shareToWhatsApp = false) {
 }
 document.getElementById("f").onsubmit = e => { e.preventDefault(); send(inp.value); };
 document.getElementById("leadForm").onsubmit = async e => {
- e.preventDefault(); const form=e.currentTarget, data=Object.fromEntries(new FormData(form).entries());
- data.consent=form.elements.consent.checked; data.save_conversation=form.elements.save_conversation.checked; data.session_id=sessionId; data.transcript=data.save_conversation?hist.slice(-24):[]; const msg=document.getElementById("leadMessage"), btn=form.querySelector("button");
- btn.disabled=true; msg.textContent="Sending securely…";
- try { const r=await fetch("/api/leads",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
- const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||"Unable to submit enquiry.");
- msg.textContent=d.message||"Thank you. ATSFy has received your enquiry."; form.reset(); sessionId=makeSessionId(); hist.length=0; log.innerHTML=""; add("assistant","Thanks — your enquiry has been submitted. If you have another question, I’m here to help.");
- } catch(err){msg.textContent=err.message;} finally{btn.disabled=false;}
+ e.preventDefault();
+ const form=e.currentTarget;
+ if (!form.reportValidity()) return;
+ const data=Object.fromEntries(new FormData(form).entries());
+ data.consent=form.elements.consent.checked;
+ data.save_conversation=form.elements.save_conversation.checked;
+ data.session_id=sessionId;
+ data.transcript=data.save_conversation?hist.slice(-24):[];
+ const msg=document.getElementById("leadMessage"), btn=form.querySelector('button[type="submit"]');
+ const originalLabel=btn.textContent;
+ const summary = [
+   "ATSFy website enquiry",
+   "Name: " + (data.name || "Not provided"),
+   "Business: " + (data.company || "Not provided"),
+   "Phone/WhatsApp: " + (data.phone || "Not provided"),
+   "Email: " + (data.email || "Not provided"),
+   "Industry: " + (data.industry || "Not provided"),
+   "City: " + (data.city || "Not provided"),
+   "Requirement: " + (data.need || "Not provided"),
+   "Budget: " + (data.budget || "Not provided"),
+   "Timeline: " + (data.timeline || "Not provided"),
+   "Contact consent: Yes"
+ ].join("\\n");
+ btn.disabled=true; btn.textContent="Submitting…"; msg.textContent="Saving your enquiry securely…";
+ try {
+   const r=await fetch("/api/leads",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+   const d=await r.json().catch(()=>({}));
+   if(!r.ok) throw new Error(d.error||"Unable to save your enquiry.");
+   msg.textContent=(d.message||"Your enquiry has been saved.")+" Please tap below to send the details to ATSFy on WhatsApp.";
+   addWhatsAppLink(msg, summary, "Send enquiry to ATSFy on WhatsApp →");
+   form.reset(); sessionId=makeSessionId(); hist.length=0;
+   log.innerHTML="";
+   add("assistant","Thanks — your enquiry has been saved. To send the details directly to our team, tap the WhatsApp link in the enquiry form. We’ll be happy to help!");
+ } catch(err) {
+   msg.textContent=err.message+" You can still send your enquiry directly to ATSFy:";
+   addWhatsAppLink(msg, summary, "Continue to ATSFy WhatsApp →");
+ } finally { btn.disabled=false; btn.textContent=originalLabel; }
 };
 </script>
 </body>
