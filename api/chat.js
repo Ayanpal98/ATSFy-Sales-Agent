@@ -14,6 +14,15 @@ async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed." });
   }
 
+  const origin = req.headers.origin;
+  let allowedOrigin = false;
+  try {
+    const parsed = new URL(origin);
+    allowedOrigin = parsed.protocol === "https:" &&
+      (parsed.hostname === "atsfysalesagent.vercel.app" || /^atsfysalesagent-[a-z0-9-]+-ayanpal98s-projects\\.vercel\\.app$/.test(parsed.hostname));
+  } catch {}
+  if (!allowedOrigin) return res.status(403).json({ error: "Request origin not allowed." });
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.status(503).json({ error: "The AI assistant is not configured yet. Please contact ATSFy on WhatsApp: +91 98625 10477." });
 
