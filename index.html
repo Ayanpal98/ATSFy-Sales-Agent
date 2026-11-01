@@ -43,7 +43,7 @@ input{flex:1;border:1px solid var(--line);background:var(--bg);color:var(--ink);
 .leadbox button{border:0;border-radius:9px;padding:9px 13px;background:var(--brand);color:var(--brandink);font-weight:650}
 #leadMessage{font-size:12px;color:var(--mute);margin:8px 0 0}
 @media(max-width:420px){.leadgrid{grid-template-columns:1fr}.leadgrid .wide{grid-column:auto}}
-a.wa{display:inline-block;margin-top:6px;color:var(--brand);font-weight:600}
+a.wa{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;padding:10px 14px;border-radius:999px;background:#128c7e;color:#fff!important;font-weight:700;text-decoration:none;cursor:pointer;min-height:42px}a.wa:hover,a.wa:focus{background:#075e54;color:#fff!important;text-decoration:none;outline:2px solid var(--brand);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -94,9 +94,12 @@ const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"
 const fmt = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/\n/g, "<br>");
 function addWhatsAppLink(container, message, label = "Send this query to ATSFy on WhatsApp →") {
   const a = document.createElement("a");
-  a.className = "wa"; a.target = "_blank"; a.rel = "noopener noreferrer";
+  a.className = "wa";
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.setAttribute("aria-label", label);
   a.textContent = label;
-  a.href = "https://wa.me/" + WA + "?text=" + encodeURIComponent(message);
+  a.href = "https://api.whatsapp.com/send?phone=" + WA + "&text=" + encodeURIComponent(message);
   container.appendChild(document.createElement("br"));
   container.appendChild(a);
 }
