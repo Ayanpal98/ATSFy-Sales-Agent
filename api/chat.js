@@ -1,4 +1,4 @@
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-3.8-flash";
 const MAX_HISTORY = 24;
 const MAX_MESSAGE_CHARS = 4000;
 
@@ -79,7 +79,7 @@ async function handler(req, res) {
 
     const payload = await upstream.json().catch(() => ({}));
     if (!upstream.ok) {
-      console.error("Gemini API error:", upstream.status, payload?.error?.status || "unknown");
+      console.error("Gemini API error:", upstream.status, payload?.error?.status || "unknown", String(payload?.error?.message || "No provider message").slice(0, 300));
       return res.status(upstream.status === 429 ? 429 : 502).json({
         error: upstream.status === 429
           ? "The assistant is busy right now. Please wait a moment and try again."
