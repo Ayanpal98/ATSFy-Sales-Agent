@@ -32,8 +32,12 @@ test("rejects requests from unapproved origins before calling the AI provider", 
   }
 });
 
-test("rejects missing, malformed and out-of-order conversation history", async () => {
+test("rejects invalid JSON, missing, malformed and out-of-order conversation history", async () => {
   process.env.GEMINI_API_KEY = "test-key";
+  const invalidJson = response();
+  await handler(request("{not-json"), invalidJson);
+  assert.equal(invalidJson.statusCode, 400);
+
   for (const history of [undefined, [], [{ role: "model", content: "Hello" }], [
     { role: "user", content: "Hello" }, { role: "user", content: "Again" }
   ]]) {
