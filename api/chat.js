@@ -42,7 +42,12 @@ async function handler(req, res) {
   if (!apiKey) return res.status(503).json({ error: "The AI assistant is not configured yet. Please contact ATSFy on WhatsApp: +91 98625 10477." });
 
   try {
-    const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+    let body;
+    try {
+      body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
+    } catch {
+      return res.status(400).json({ error: "Please send valid JSON." });
+    }
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return res.status(400).json({ error: "Please send a valid chat request." });
     }
