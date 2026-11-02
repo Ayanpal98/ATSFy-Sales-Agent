@@ -60,3 +60,13 @@ The connected Vercel project creates Preview deployments from feature branches. 
 ## Local development
 
 Use Vercel CLI (`vercel dev`) after securely configuring the required environment variables locally.
+
+## Reliability tests
+
+Run the built-in API validation suite with Node.js 20 or later:
+
+```bash
+npm test
+```
+
+The suite checks origin rejection, malformed and oversized chat history, server-owned system instructions, and retryable provider throttling. GitHub Actions runs the suite on pull requests and pushes to `main`.
