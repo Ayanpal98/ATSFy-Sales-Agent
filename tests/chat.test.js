@@ -52,8 +52,8 @@ test("rejects oversized messages and total conversation payloads", async () => {
   const tooMuch = response();
   const history = [];
   for (let i = 0; i < 6; i++) {
-    history.push({ role: "user", content: "u".repeat(1000) });
-    history.push({ role: "model", content: "m".repeat(1000) });
+    history.push({ role: "user", content: "u".repeat(1500) });
+    history.push({ role: "model", content: "m".repeat(1500) });
   }
   await handler(request({ history }), tooMuch);
   assert.equal(tooMuch.statusCode, 413);
