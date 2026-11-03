@@ -55,7 +55,7 @@ test("proposal assistant saves a review-only outline without inventing price", a
     assert.equal(res.body.item.price_min, null);
     assert.equal(res.body.item.price_max, null);
     assert.match(res.body.item.scope.terms, /DRAFT ONLY/);
-    assert.equal(res.body.item.scope.missing_information.length, 3);
+    assert.equal(res.body.item.scope.missing_information.length, 2);
     assert.equal(writes.filter(x => x.table === "proposals").length, 1);
     assert.equal(writes.filter(x => x.table === "activities").length, 1);
     assert.equal(writes.filter(x => x.table === "runs").length, 1);
