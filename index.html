@@ -19,7 +19,7 @@ button,input{font:inherit}button{cursor:pointer}.shell{max-width:1240px;margin:a
 .footer{display:flex;justify-content:space-between;gap:12px;color:#929c92;font-size:10px;padding:17px 3px 0}.footer a{color:#6f806e;text-decoration:none}
 @media(max-width:850px){.shell{padding:18px 16px 22px}.layout{grid-template-columns:1fr;min-height:0;height:auto}.sidebar{display:none}.chatcard{height:calc(100dvh - 105px);min-height:520px}#log{max-height:none;min-height:0}.welcome{padding:22px 22px 15px}.chips,.tools{padding-inline:22px}.chathead{padding:15px 18px}}
 @media(max-width:480px){.shell{padding:10px 0 0}.topbar{padding:0 15px;margin-bottom:10px}.brandmark{width:38px;height:38px}.brandname{font-size:15px}.status{font-size:10px;padding:7px 9px}.layout{gap:0}.chatcard{height:calc(100dvh - 60px);min-height:480px;border-radius:18px 18px 0 0;border-inline:0}.chathead{padding:13px 16px}.secure{display:none}.welcome{padding:20px 18px 13px}.welcome h1{font-size:25px}#log{padding:13px 16px 18px;min-height:250px}.m{max-width:92%;font-size:13px}.chips,.tools{padding-inline:16px;gap:6px}.chip{font-size:11px;padding:7px 10px}.composer{padding:11px 13px max(11px,env(safe-area-inset-bottom));gap:7px}.composer input{padding:11px 13px}.send{padding:0 17px}.leadbox{margin-inline:13px}.leadgrid{grid-template-columns:1fr}.leadgrid .wide{grid-column:auto}.note{padding-bottom:9px}.footer{padding:10px 15px 13px}}
-</style>
+.catalogue-panel{width:100%;max-width:760px;background:#fff;border:1px solid #e1e8df;border-radius:16px;padding:16px;margin-top:4px}.catalogue-panel h3{margin:0 0 5px;font-size:16px;color:#203d2a}.catalogue-panel>p{margin:0 0 13px;color:#718075;font-size:12px}.catalogue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.catalogue-item{border:1px solid #e7ece5;background:#fbfcfa;border-radius:12px;padding:11px}.catalogue-item strong{display:block;font-size:12px;color:#254b34;margin-bottom:4px}.catalogue-item span{display:block;font-size:11px;color:#6e7b70;line-height:1.45}.catalogue-foot{font-size:11px!important;margin-top:12px!important;padding-top:10px;border-top:1px solid #edf0eb}@media(max-width:480px){.catalogue-grid{grid-template-columns:1fr}}</style>
 </head>
 <body>
 <div class="shell">
@@ -84,6 +84,11 @@ button,input{font:inherit}button{cursor:pointer}.shell{max-width:1240px;margin:a
 const WA = "919862510477";
 const SYSTEM = `You are the friendly, consultative sales guide for ATSFY Technologies, an AI venture studio in Agartala, Tripura, India. Contact: atsfy@atsfy.tech, WhatsApp +91 98625 10477.
 SERVICES: business websites, e-commerce, Android/iOS apps and PWAs, AI chatbots and call managers, workflow and online-store automation, business analytics, AI Business Manager (Starter/Growth/Pro), startup/DPIIT registration guidance, and AI/digital-skills workshops.
+CATALOGUE KNOWLEDGE:
+- Services include websites and e-commerce, Android/iOS apps, AI assistants and automation, business intelligence, UI/UX, SEO, ASO, technical support, startup/digital enablement and AI/digital-skills workshops.
+- ATSFY product ecosystem includes ATSFY Career Intelligence (AI-assisted hiring and candidate intelligence), Anirudh Learner OS (digital learning tools), ExamAI India (AI-enabled examination and evaluation workflows), Vital Health (fitness and wellness), Green to Gold (agri-waste and bio-composite innovation), Clinova (clinic and care-management concept), and founder tools.
+- These names describe ATSFY's product ecosystem; do not imply every product is generally available, fully launched, or ready for immediate deployment. Confirm demo and current availability with the team.
+- Selected service offers have a starting reference from ₹4,999. Custom projects are scope-quoted. Do not assign individual product prices unless the team has confirmed them.
 CONVERSATION STYLE:
 - Sound like a thoughtful, curious human business consultant: warm, upbeat, clear and relaxed. Use natural contractions and the visitor's name only if they share it.
 - Start with a welcoming line and one easy question about the idea or business goal. Never open with a questionnaire or a sales pitch.
@@ -155,6 +160,73 @@ renderSuggestions(starterPrompts);
   b.className = "chip"; b.type = "button"; b.textContent = label;
   b.onclick = () => send(prompt, shareToWhatsApp, action); tools.appendChild(b);
 });
+
+const catalogueButton = document.createElement("button");
+catalogueButton.type = "button";
+catalogueButton.className = "chip";
+catalogueButton.textContent = "Explore ATSFY catalogue";
+catalogueButton.onclick = showCatalogue;
+tools.prepend(catalogueButton);
+
+function showCatalogue() {
+  const wrap = document.createElement("div");
+  wrap.className = "m bot";
+  wrap.style.cssText = "max-width:100%;width:100%;background:transparent;border:0;padding:0";
+  const panel = document.createElement("section");
+  panel.className = "catalogue-panel";
+  const heading = document.createElement("h3");
+  heading.textContent = "ATSFY Products & Services";
+  panel.appendChild(heading);
+  const intro = document.createElement("p");
+  intro.textContent = "Explore our digital solutions. We’ll help you choose the right starting point for your business.";
+  panel.appendChild(intro);
+  const groups = [
+    { title: "Services", items: [
+      ["Websites & e-commerce", "Business websites, online stores, portals and custom web applications."],
+      ["Android & iOS apps", "Mobile app planning, UI/UX, development and integrations."],
+      ["AI assistants & automation", "AI chat assistants, workflow automation and business process tools."],
+      ["Business intelligence", "Dashboards, reporting, analytics and decision-support tools."],
+      ["Digital growth", "UI/UX, SEO, ASO, digital presence and technical support."],
+      ["Startup & digital enablement", "Digital product guidance, founder tools and AI/digital-skills workshops."]
+    ]},
+    { title: "Our product ecosystem", items: [
+      ["ATSFY Career Intelligence", "AI-assisted hiring and candidate intelligence."],
+      ["Anirudh Learner OS", "Digital learning tools and learner workspace."],
+      ["ExamAI India", "AI-enabled examination and evaluation workflows."],
+      ["Vital Health", "Fitness, wellness and habit-support experience."],
+      ["Green to Gold", "Agri-waste innovation and bio-composite solutions."],
+      ["Clinova", "Connected clinic and care-management concept."],
+      ["Founder tools", "Digital tools and guidance for startup builders."]
+    ]}
+  ];
+  groups.forEach(group => {
+    const label = document.createElement("p");
+    label.textContent = group.title;
+    label.style.cssText = "font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9a783b;margin:15px 0 8px";
+    panel.appendChild(label);
+    const grid = document.createElement("div");
+    grid.className = "catalogue-grid";
+    group.items.forEach(([name, description]) => {
+      const card = document.createElement("div");
+      card.className = "catalogue-item";
+      const title = document.createElement("strong");
+      title.textContent = name;
+      const detail = document.createElement("span");
+      detail.textContent = description;
+      card.append(title, detail);
+      grid.appendChild(card);
+    });
+    panel.appendChild(grid);
+  });
+  const foot = document.createElement("p");
+  foot.className = "catalogue-foot";
+  foot.textContent = "Selected service offers start from ₹4,999. Custom projects are quoted after understanding the scope. Product demos, current availability, timelines and final pricing are confirmed by the ATSFY team.";
+  panel.appendChild(foot);
+  wrap.appendChild(panel);
+  log.appendChild(wrap);
+  addWhatsAppLink(wrap, "Hello ATSFY, I explored your products and services catalogue. Please help me understand the most suitable option for my requirement.", "Discuss this catalogue with ATSFY →");
+  log.scrollTop = log.scrollHeight;
+}
 
 function addSaveProposalAction(container) {
   const b = document.createElement("button");
