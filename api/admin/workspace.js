@@ -64,6 +64,30 @@ module.exports=async function handler(req,res){
     const row=await rest(s,"followup_tasks",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({lead_id:leadId,due_at:due.toISOString(),channel,message_draft:clean(b.message_draft,2000)||null,status:"pending"})});
     return json(res,201,{item:Array.isArray(row)?row[0]:row});
    }
+   if(kind==="proposal_generate"){
+    const leads=await rest(s,"leads?id=eq."+encodeURIComponent(leadId)+"&select=id,name,company,industry,city,need,budget_range,timeline,status,lead_score");
+    if(!Array.isArray(leads)||!leads.length)return json(res,404,{error:"Lead not found."});
+    const lead=leads[0];
+    const missing=[];
+    if(!lead.need)missing.push("Confirm the exact requirement and desired outcome.");
+    if(!lead.budget_range)missing.push("Confirm the approved budget range.");
+    if(!lead.timeline)missing.push("Confirm the expected start date and delivery window.");
+    if(!lead.company)missing.push("Confirm the business or organisation name.");
+    const title=(lead.need?clean(lead.need,100):"Digital solution")+" — proposal draft";
+    const scope={
+     description:"Prepared from the lead record for internal ATSFy review. This is a working scope outline, not an AI-verified specification.\n\nClient: "+(lead.company||lead.name)+"\nIndustry: "+(lead.industry||"To confirm")+"\nLocation: "+(lead.city||"To confirm")+"\nRequirement: "+(lead.need||"Not yet captured")+"\nBudget shared: "+(lead.budget_range||"Not provided")+"\nTimeline shared: "+(lead.timeline||"Not provided"),
+     deliverables:["Discovery and requirement confirmation","Finalised scope and deliverables after review","Implementation plan and milestones to be confirmed","Testing, handover and support terms to be confirmed"],
+     assumptions:["No integrations, platforms or third-party costs are assumed until verified.","Delivery dates and technical feasibility require ATSFy review."],
+     missing_information:missing,
+     terms:"INTERNAL DRAFT ONLY. No price, discount, delivery commitment or customer offer has been approved. ATSFy must verify scope, feasibility, taxes, payment milestones and support terms before sharing."
+    };
+    const row=await rest(s,"proposals",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({lead_id:leadId,title,scope,price_min:null,price_max:null,currency:"INR",status:"draft"})});
+    const proposal=Array.isArray(row)?row[0]:null;
+    if(!proposal?.id)return json(res,502,{error:"Proposal draft could not be confirmed as saved."});
+    await rest(s,"lead_activities",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({lead_id:leadId,activity_type:"proposal",content:"A structured proposal outline was generated from the current CRM record. Pricing and commitments remain blank pending ATSFy review.",actor_id:s.user.id})});
+    await rest(s,"agent_runs",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({run_type:"proposal_draft",status:"succeeded",input_summary:"Prepared an internal proposal outline for one lead using CRM fields only.",output_summary:"Saved draft "+proposal.id+" with "+missing.length+" missing-information prompts.",started_at:new Date().toISOString(),finished_at:new Date().toISOString()})});
+    return json(res,201,{item:proposal,message:"Proposal outline saved for ATSFy review. Pricing and commitments were intentionally left blank."});
+   }
    if(kind==="proposal"){
     const title=clean(b.title,180);const min=b.price_min===""||b.price_min==null?null:Number(b.price_min),max=b.price_max===""||b.price_max==null?null:Number(b.price_max);
     if(!title||((min!==null&&(!Number.isFinite(min)||min<0))||(max!==null&&(!Number.isFinite(max)||max<0)))||(min!==null&&max!==null&&max<min))return json(res,400,{error:"Enter a title and valid INR price range."});
