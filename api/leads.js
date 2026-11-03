@@ -36,6 +36,7 @@ module.exports = async function handler(req, res) {
       budget_range: budget || null, timeline: timeline || null, lead_score: leadScore,
       source: "website_chat", source_url: "https://atsfysalesagent.vercel.app/",
       consent_to_contact: true, consent_at: new Date().toISOString(),
+      next_follow_up_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       whatsapp_opt_in: whatsappOptIn, whatsapp_opt_in_at: whatsappOptIn ? new Date().toISOString() : null, status: "new"
     };
     const response = await fetch(url.replace(/\/$/, "") + "/rest/v1/leads", {
@@ -47,6 +48,15 @@ module.exports = async function handler(req, res) {
     const leadId = Array.isArray(inserted) ? inserted[0]?.id : null;
     if (!leadId) return json(res, 502, { error: "Your enquiry could not be confirmed as saved. Please try again or contact ATSFy on WhatsApp." });
     if (leadId) {
+      try {
+        const dueAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        const reminder = await fetch(url.replace(/\/$/, "") + "/rest/v1/followup_tasks", {
+          method: "POST", headers: { "Content-Type": "application/json", "apikey": key, "Authorization": "Bearer " + key, "Prefer": "return=minimal" },
+          body: JSON.stringify({ lead_id: leadId, due_at: dueAt, channel: "internal", message_draft: "Review this new enquiry, qualify the requirement and decide the next human-approved contact step.", status: "pending" }),
+          signal: AbortSignal.timeout(8000)
+        });
+        if (!reminder.ok) console.warn("Internal follow-up reminder was not created:", reminder.status);
+      } catch (error) { console.warn("Internal follow-up reminder failed:", error?.name || "Error"); }
       try {
         await fetch(url.replace(/\/$/, "") + "/rest/v1/lead_activities", {
           method: "POST", headers: { "Content-Type": "application/json", "apikey": key, "Authorization": "Bearer " + key, "Prefer": "return=minimal" },
