@@ -17,7 +17,7 @@ module.exports = async function handler(req, res) {
   if (!url || !key) return json(res, 503, { error: "Lead storage is being configured. Please contact ATSFy directly." });
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
-    if (body.website) return json(res, 200, { ok: true });
+    if (body.fax_number) return json(res, 400, { error: "Unable to process this enquiry. Please refresh and try again." });
     const clean = v => typeof v === "string" ? v.trim().slice(0, 500) : "";
     const name = clean(body.name), email = clean(body.email).toLowerCase(), phone = clean(body.phone);
     if (!name || (!email && !phone) || body.consent !== true) return json(res, 400, { error: "Please provide your name, one contact method and consent to be contacted." });
@@ -45,6 +45,7 @@ module.exports = async function handler(req, res) {
     if (!response.ok) { console.error("Lead storage failed:", response.status); return json(res, 502, { error: "We could not save your enquiry. Please contact ATSFy on WhatsApp." }); }
     const inserted = await response.json().catch(() => []);
     const leadId = Array.isArray(inserted) ? inserted[0]?.id : null;
+    if (!leadId) return json(res, 502, { error: "Your enquiry could not be confirmed as saved. Please try again or contact ATSFy on WhatsApp." });
     if (leadId) {
       try {
         await fetch(url.replace(/\/$/, "") + "/rest/v1/lead_activities", {
