@@ -60,13 +60,13 @@ button,input{font:inherit}button{cursor:pointer}.shell{max-width:1240px;margin:a
         <div class="chips" id="chips"></div>
         <div class="tools" id="tools"></div>
         <details class="leadbox"><summary>Request a personal follow-up from ATSFY</summary>
-          <form id="leadForm" class="leadgrid">
+          <form id="leadForm" class="leadgrid" novalidate>
             <input name="name" placeholder="Your name *" maxlength="120" required><input name="company" placeholder="Business / company" maxlength="160">
             <input name="phone" placeholder="Phone / WhatsApp"><input name="email" type="email" placeholder="Email address">
             <input name="industry" placeholder="Industry" maxlength="100"><input name="city" placeholder="City / region" maxlength="100">
             <input class="wide" name="need" placeholder="What would you like ATSFY to help with?" maxlength="500">
             <input name="budget" placeholder="Approx. budget (optional)" maxlength="100"><input name="timeline" placeholder="Expected timeline (optional)" maxlength="100">
-            <input name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px">
+            <input name="fax_number" tabindex="-1" autocomplete="new-password" aria-hidden="true" style="position:absolute;left:-9999px">
             <label class="consent wide"><input type="checkbox" name="consent" required><span>I agree that ATSFY Technologies may contact me about this enquiry. I can ask to stop follow-ups at any time.</span></label>
             <label class="consent wide"><input type="checkbox" name="whatsapp_opt_in"><span>Optional: I agree to receive WhatsApp updates about this enquiry from ATSFY Technologies. I can withdraw this consent at any time.</span></label>
             <label class="consent wide"><input type="checkbox" name="save_conversation"><span>Optionally save this chat with my enquiry so the ATSFY team can understand the context. This is not required to submit the form.</span></label>
@@ -307,52 +307,36 @@ async function send(text, shareToWhatsApp = false, action = "") {
   }
 }
 document.getElementById("f").onsubmit = e => { e.preventDefault(); send(inp.value); };
-document.getElementById("leadForm").onsubmit = async e => {
+document.getElementById("leadForm").addEventListener("submit", async e => {
  e.preventDefault();
- const form=e.currentTarget;
- if (!form.reportValidity()) return;
+ const form=e.currentTarget,msg=document.getElementById("leadMessage"),btn=form.querySelector('button[type="submit"]');
  const data=Object.fromEntries(new FormData(form).entries());
- if(!String(data.email||"").trim()&&!String(data.phone||"").trim()){const msg=document.getElementById("leadMessage");msg.textContent="Please add either a phone/WhatsApp number or an email address so our team can reach you.";form.elements.phone.focus();return;}
+ const name=String(data.name||"").trim(),email=String(data.email||"").trim(),phone=String(data.phone||"").trim();
+ const showError=(message,field)=>{msg.textContent=message;if(field){field.focus();field.scrollIntoView({block:"center",behavior:"smooth"});}};
+ if(!name){showError("Please enter your name.",form.elements.name);return;}
+ if(!email&&!phone){showError("Please add a phone/WhatsApp number or an email address.",form.elements.phone);return;}
+ if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){showError("Please enter a valid email address.",form.elements.email);return;}
+ if(phone&&!/^[+0-9() .-]{7,20}$/.test(phone)){showError("Please enter a valid phone number.",form.elements.phone);return;}
+ if(!form.elements.consent.checked){showError("Please tick the contact-consent box before submitting.",form.elements.consent);return;}
  const chatContext=hist.filter(item=>item.role==="user").map(item=>item.content).filter(Boolean).slice(-8).join(" | ").slice(0,500);
  if(!String(data.need||"").trim()&&chatContext)data.need=chatContext;
- data.consent=form.elements.consent.checked;
- data.save_conversation=form.elements.save_conversation.checked;
- data.whatsapp_opt_in=form.elements.whatsapp_opt_in.checked;
- data.session_id=sessionId;
+ data.consent=true;data.save_conversation=form.elements.save_conversation.checked;
+ data.whatsapp_opt_in=form.elements.whatsapp_opt_in.checked;data.session_id=sessionId;
  data.transcript=data.save_conversation?hist.slice(-24):[];
- const msg=document.getElementById("leadMessage"), btn=form.querySelector('button[type="submit"]');
  const originalLabel=btn.textContent;
- const summary = [
-   "ATSFy website enquiry",
-   "Name: " + (data.name || "Not provided"),
-   "Business: " + (data.company || "Not provided"),
-   "Phone/WhatsApp: " + (data.phone || "Not provided"),
-   "Email: " + (data.email || "Not provided"),
-   "Industry: " + (data.industry || "Not provided"),
-   "City: " + (data.city || "Not provided"),
-   "Requirement: " + (data.need || "Not provided"),
-   "Budget: " + (data.budget || "Not provided"),
-   "Timeline: " + (data.timeline || "Not provided"),
-   "Contact consent: Yes",
-   "WhatsApp updates consent: " + (data.whatsapp_opt_in ? "Yes" : "No")
- ].join("\n");
- btn.disabled=true; btn.textContent="Submitting…"; msg.textContent="Saving your enquiry securely…";
- try {
-   const r=await fetch("/api/leads",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
-   const d=await r.json().catch(()=>({}));
-   if(!r.ok) throw new Error(d.error||"Unable to save your enquiry.");
-   leadToken=d.lead_token||null;
-   msg.textContent=(d.message||"Your enquiry has been saved.")+" Please tap below to send the details to ATSFy on WhatsApp.";
-   if(latestEstimateDraft&&leadToken){try{const saved=await fetch("/api/proposals",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lead_token:leadToken,title:"Website chat estimate",description:latestEstimateDraft,session_id:sessionId})});const result=await saved.json().catch(()=>({}));if(!saved.ok)throw new Error(result.error||"Draft save failed");msg.textContent+=" The estimate has also been saved as a draft proposal for ATSFy review.";}catch(saveError){msg.textContent+=" Your enquiry is saved, but the estimate draft still needs saving: "+saveError.message;}}
-   addWhatsAppLink(msg, summary, "Send enquiry to ATSFy on WhatsApp →");
-   form.reset(); sessionId=makeSessionId(); hist.length=0;
-   log.innerHTML="";
-   add("assistant","Thanks — your enquiry has been saved. To send the details directly to our team, tap the WhatsApp link in the enquiry form. We’ll be happy to help!");
- } catch(err) {
-   msg.textContent=err.message+" You can still send your enquiry directly to ATSFy:";
-   addWhatsAppLink(msg, summary, "Continue to ATSFy WhatsApp →");
- } finally { btn.disabled=false; btn.textContent=originalLabel; }
-};
+ const summary=["ATSFy website enquiry","Name: "+(data.name||"Not provided"),"Business: "+(data.company||"Not provided"),"Phone/WhatsApp: "+(data.phone||"Not provided"),"Email: "+(data.email||"Not provided"),"Industry: "+(data.industry||"Not provided"),"City: "+(data.city||"Not provided"),"Requirement: "+(data.need||"Not provided"),"Budget: "+(data.budget||"Not provided"),"Timeline: "+(data.timeline||"Not provided"),"Contact consent: Yes","WhatsApp updates consent: "+(data.whatsapp_opt_in?"Yes":"No")].join("\n");
+ btn.disabled=true;btn.textContent="Submitting…";msg.textContent="Saving your enquiry securely to ATSFY CRM…";
+ try{
+  const r=await fetch("/api/leads",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok||d.ok!==true||!d.lead_token)throw new Error(d.error||"We couldn't confirm that your enquiry was saved. Please try again.");
+  leadToken=d.lead_token;msg.textContent="✓ "+(d.message||"Your enquiry has been saved in ATSFY CRM.")+" You can also message our team using the WhatsApp link below.";
+  if(latestEstimateDraft&&leadToken){try{const saved=await fetch("/api/proposals",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lead_token:leadToken,title:"Website chat estimate",description:latestEstimateDraft,session_id:sessionId})});const result=await saved.json().catch(()=>({}));if(!saved.ok)throw new Error(result.error||"Draft save failed");msg.textContent+=" The estimate draft is saved for ATSFY review.";}catch(saveError){msg.textContent+=" Your lead is saved; the estimate draft still needs saving: "+saveError.message;}}
+  addWhatsAppLink(msg,summary,"Send enquiry to ATSFy on WhatsApp →");form.reset();sessionId=makeSessionId();hist.length=0;log.innerHTML="";
+  add("assistant","Thank you — your enquiry has been saved in ATSFY CRM. You can also send the details to our team using the WhatsApp link in the form.");
+ }catch(err){msg.textContent=(err.message||"We couldn't save your enquiry.")+" You can still contact ATSFy directly:";addWhatsAppLink(msg,summary,"Continue to ATSFy WhatsApp →");}
+ finally{btn.disabled=false;btn.textContent=originalLabel;}
+});
 </script>
 </body>
 </html>
