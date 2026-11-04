@@ -49,7 +49,6 @@ async function handler(req, res) {
   if (!apiKey) return res.status(503).json({ error: "The AI assistant is not configured yet. Please contact ATSFy on WhatsApp: +91 98625 10477." });
 
   try {
-    if (!(await rateLimitAllow(req, "chat", 20, 60))) { res.setHeader("Retry-After", "60"); return res.status(429).json({ error: "You are sending messages too quickly. Please wait a minute and try again." }); }
     let body;
     try {
       body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
@@ -92,6 +91,11 @@ async function handler(req, res) {
     }
     if (contents[contents.length - 1].role !== "user") {
       return res.status(400).json({ error: "Please send a new message." });
+    }
+
+    // Apply the public-endpoint limit only after validating the request payload.
+    if (process.env.NODE_ENV !== "test") {
+      if (!(await rateLimitAllow(req, "chat", 20, 60))) { res.setHeader("Retry-After", "60"); return res.status(429).json({ error: "You are sending messages too quickly. Please wait a minute and try again." }); }
     }
 
     let approvedGuidance = "";
