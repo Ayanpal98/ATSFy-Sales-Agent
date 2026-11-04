@@ -1,3 +1,4 @@
+const { allow: rateLimitAllow } = require("./_rate-limit");
 const MODEL = "gemini-3.5-flash-lite";
 const MAX_HISTORY = 12;
 const MAX_MESSAGE_CHARS = 2000;
@@ -48,6 +49,7 @@ async function handler(req, res) {
   if (!apiKey) return res.status(503).json({ error: "The AI assistant is not configured yet. Please contact ATSFy on WhatsApp: +91 98625 10477." });
 
   try {
+    if (!(await rateLimitAllow(req, "chat", 20, 60))) { res.setHeader("Retry-After", "60"); return res.status(429).json({ error: "You are sending messages too quickly. Please wait a minute and try again." }); }
     let body;
     try {
       body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
@@ -151,6 +153,7 @@ async function handler(req, res) {
     if (!reply) return res.status(502).json({ error: "The assistant returned an empty response. Please try again." });
     return res.status(200).json({ reply });
   } catch (error) {
+    if (error?.message === "Rate-limit service unavailable." || error?.message === "Rate limiting is not configured.") return res.status(503).json({ error: "The assistant is temporarily unavailable. Please try again shortly." });
     console.error("Chat handler error:", error?.name || "Error");
     if (error?.name === "TimeoutError" || error?.name === "AbortError") {
       return res.status(504).json({ error: "The assistant is taking longer than expected. Please try again in a moment." });
