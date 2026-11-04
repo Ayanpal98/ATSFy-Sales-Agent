@@ -1,5 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+// The production rate limiter is exercised in integration; unit tests isolate chat validation/provider behaviour.
+process.env.NODE_ENV = "test";
 const handler = require("../api/chat");
 
 function response() {
