@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const { allow: rateLimitAllow } = require("./_rate-limit");
 function json(res, status, body) {
   return res.status(status).setHeader("Cache-Control", "no-store").json(body);
 }
@@ -16,6 +17,7 @@ module.exports = async function handler(req, res) {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) return json(res, 503, { error: "Lead storage is being configured. Please contact ATSFy directly." });
   try {
+    if (!(await rateLimitAllow(req, "lead-intake", 5, 3600))) { res.setHeader("Retry-After", "3600"); return json(res, 429, { error: "Too many enquiries from this connection. Please try again later or contact ATSFy directly." }); }
     const body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {};
     if (body.fax_number) return json(res, 400, { error: "Unable to process this enquiry. Please refresh and try again." });
     const clean = v => typeof v === "string" ? v.trim().slice(0, 500) : "";
@@ -85,6 +87,7 @@ module.exports = async function handler(req, res) {
     const leadToken = tokenPayload + "." + tokenSignature;
     return json(res, 201, { ok: true, lead_token: leadToken, message: "Thank you. Your enquiry has been shared with ATSFy." });
   } catch (error) {
+    if (error?.message === "Rate-limit service unavailable." || error?.message === "Rate limiting is not configured.") return json(res, 503, { error: "Enquiry submission is temporarily unavailable. Please contact ATSFy directly." });
     console.error("Lead intake error:", error?.name || "Error");
     return json(res, 500, { error: "Something went wrong. Please try again." });
   }
