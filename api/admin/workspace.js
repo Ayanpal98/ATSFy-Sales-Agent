@@ -121,9 +121,21 @@ module.exports=async function handler(req,res){
    return json(res,200,{ok:true});
   }
   if(kind==="proposal"){
-   if(!["pending_approval","approved","rejected"].includes(b.status))return json(res,400,{error:"Invalid proposal review action."});
-   await rest(s,"proposals?id=eq."+encodeURIComponent(id)+"&status=in.(draft,pending_approval)",{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:b.status,approved_by:b.status==="approved"?s.user.id:null,approved_at:b.status==="approved"?new Date().toISOString():null})});
-   return json(res,200,{ok:true});
+   const allowed=["approved","rejected","sent","accepted"];
+   if(!allowed.includes(b.status))return json(res,400,{error:"Invalid proposal lifecycle action."});
+   const rows=await rest(s,"proposals?id=eq."+encodeURIComponent(id)+"&select=id,lead_id,status");
+   if(!Array.isArray(rows)||!rows.length)return json(res,404,{error:"Proposal not found."});
+   const proposal=rows[0],from=proposal.status;
+   const transitions={draft:["approved","rejected"],pending_approval:["approved","rejected"],approved:["sent","rejected"],sent:["accepted","rejected"]};
+   if(!(transitions[from]||[]).includes(b.status))return json(res,409,{error:"This proposal cannot move from "+from+" to "+b.status+"."});
+   const patch={status:b.status};
+   if(b.status==="approved"){patch.approved_by=s.user.id;patch.approved_at=new Date().toISOString();}
+   await rest(s,"proposals?id=eq."+encodeURIComponent(id)+"&status=eq."+encodeURIComponent(from),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify(patch)});
+   if(b.status==="accepted"){
+    await rest(s,"leads?id=eq."+encodeURIComponent(proposal.lead_id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:"won"})});
+   }
+   await rest(s,"lead_activities",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({lead_id:proposal.lead_id,activity_type:"proposal",content:"Proposal status changed from "+from+" to "+b.status+" by an administrator. "+(b.status==="accepted"?"Lead moved to won; record the commercial value separately.":"No customer message was sent automatically."),actor_id:s.user.id})});
+   return json(res,200,{ok:true,status:b.status});
   }
   return json(res,400,{error:"Unsupported workspace action."});
  }catch(error){console.error("Workspace API error:",error?.status||error?.name||"Error");return json(res,error?.status===400?400:500,{error:"The CRM workspace could not complete that request. Please refresh and try again."})}
