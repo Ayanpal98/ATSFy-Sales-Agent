@@ -36,3 +36,15 @@ end;
 $$;
 revoke all on function public.rate_limit_hit(text, integer, integer) from public, anon, authenticated;
 grant execute on function public.rate_limit_hit(text, integer, integer) to service_role;
+
+-- Support lead-linked WhatsApp event lookups in the admin workspace.
+create index if not exists idx_whatsapp_message_events_lead_id
+  on public.whatsapp_message_events (lead_id);
+
+-- Evaluate JWT claims once per statement rather than once per row.
+drop policy if exists "Admins can read WhatsApp message events" on public.whatsapp_message_events;
+create policy "Admins can read WhatsApp message events"
+  on public.whatsapp_message_events
+  for select
+  to authenticated
+  using (((select auth.jwt()) -> 'app_metadata' ->> 'role') = 'admin');
