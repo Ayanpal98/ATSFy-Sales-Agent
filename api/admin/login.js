@@ -1,8 +1,12 @@
+const { allow: rateLimitAllow } = require("../_rate-limit");
 function json(res, status, body) {
   return res.status(status).setHeader("Cache-Control", "no-store").json(body);
 }
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") { res.setHeader("Allow", "POST"); return json(res, 405, { error: "Method not allowed." }); }
+  try {
+    if (!(await rateLimitAllow(req, "admin-login", 5, 900))) { res.setHeader("Retry-After", "900"); return json(res, 429, { error: "Too many sign-in attempts. Please wait 15 minutes and try again." }); }
+  } catch { return json(res, 503, { error: "Sign-in is temporarily unavailable." }); }
   const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_ANON_KEY;
   if (!url || !key) return json(res, 503, { error: "Admin authentication is not configured yet." });
   try {

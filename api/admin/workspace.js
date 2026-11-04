@@ -130,9 +130,11 @@ module.exports=async function handler(req,res){
    if(!(transitions[from]||[]).includes(b.status))return json(res,409,{error:"This proposal cannot move from "+from+" to "+b.status+"."});
    const patch={status:b.status};
    if(b.status==="approved"){patch.approved_by=s.user.id;patch.approved_at=new Date().toISOString();}
-   await rest(s,"proposals?id=eq."+encodeURIComponent(id)+"&status=eq."+encodeURIComponent(from),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify(patch)});
+   const changed=await rest(s,"proposals?id=eq."+encodeURIComponent(id)+"&status=eq."+encodeURIComponent(from),{method:"PATCH",headers:{Prefer:"return=representation"},body:JSON.stringify(patch)});
+   if(!Array.isArray(changed)||changed.length!==1)return json(res,409,{error:"The proposal changed in another session. Refresh the CRM and try again."});
    if(b.status==="accepted"){
-    await rest(s,"leads?id=eq."+encodeURIComponent(proposal.lead_id),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:"won"})});
+    const won=await rest(s,"leads?id=eq."+encodeURIComponent(proposal.lead_id),{method:"PATCH",headers:{Prefer:"return=representation"},body:JSON.stringify({status:"won"})});
+    if(!Array.isArray(won)||won.length!==1)return json(res,500,{error:"Proposal was accepted, but the lead stage could not be confirmed. Please reconcile this record in the CRM."});
    }
    await rest(s,"lead_activities",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({lead_id:proposal.lead_id,activity_type:"proposal",content:"Proposal status changed from "+from+" to "+b.status+" by an administrator. "+(b.status==="accepted"?"Lead moved to won; record the commercial value separately.":"No customer message was sent automatically."),actor_id:s.user.id})});
    return json(res,200,{ok:true,status:b.status});
