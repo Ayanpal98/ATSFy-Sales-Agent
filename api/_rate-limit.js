@@ -12,7 +12,7 @@ async function allow(req, endpoint, limit, windowSeconds) {
   const digest = crypto.createHmac("sha256", key)
     .update(endpoint + ":" + clientAddress(req))
     .digest("hex");
-  const response = await fetch(url.replace(/\\/$/, "") + "/rest/v1/rpc/rate_limit_hit", {
+  const response = await fetch(url.replace(/\/$/, "") + "/rest/v1/rpc/rate_limit_hit", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
