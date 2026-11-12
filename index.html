@@ -19,7 +19,8 @@ button,input{font:inherit}button{cursor:pointer}.shell{max-width:1240px;margin:a
 .footer{display:flex;justify-content:space-between;gap:12px;color:#929c92;font-size:10px;padding:17px 3px 0}.footer a{color:#6f806e;text-decoration:none}
 @media(max-width:850px){.shell{padding:18px 16px 22px}.layout{grid-template-columns:1fr;min-height:0;height:auto}.sidebar{display:none}.chatcard{height:calc(100dvh - 105px);min-height:520px}#log{max-height:none;min-height:0}.welcome{padding:22px 22px 15px}.chips,.tools{padding-inline:22px}.chathead{padding:15px 18px}}
 @media(max-width:480px){.shell{padding:10px 0 0}.topbar{padding:0 15px;margin-bottom:10px}.brandmark{width:38px;height:38px}.brandname{font-size:15px}.status{font-size:10px;padding:7px 9px}.layout{gap:0}.chatcard{height:calc(100dvh - 60px);min-height:480px;border-radius:18px 18px 0 0;border-inline:0}.chathead{padding:13px 16px}.secure{display:none}.welcome{padding:20px 18px 13px}.welcome h1{font-size:25px}#log{padding:13px 16px 18px;min-height:250px}.m{max-width:92%;font-size:13px}.chips,.tools{padding-inline:16px;gap:6px}.chip{font-size:11px;padding:7px 10px}.composer{padding:11px 13px max(11px,env(safe-area-inset-bottom));gap:7px}.composer input{padding:11px 13px}.send{padding:0 17px}.leadbox{margin-inline:13px}.leadgrid{grid-template-columns:1fr}.leadgrid .wide{grid-column:auto}.note{padding-bottom:9px}.footer{padding:10px 15px 13px}}
-.catalogue-panel{width:100%;max-width:760px;background:#fff;border:1px solid #e1e8df;border-radius:16px;padding:16px;margin-top:4px}.catalogue-panel h3{margin:0 0 5px;font-size:16px;color:#203d2a}.catalogue-panel>p{margin:0 0 13px;color:#718075;font-size:12px}.catalogue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.catalogue-item{border:1px solid #e7ece5;background:#fbfcfa;border-radius:12px;padding:11px}.catalogue-item strong{display:block;font-size:12px;color:#254b34;margin-bottom:4px}.catalogue-item span{display:block;font-size:11px;color:#6e7b70;line-height:1.45}.catalogue-foot{font-size:11px!important;margin-top:12px!important;padding-top:10px;border-top:1px solid #edf0eb}@media(max-width:480px){.catalogue-grid{grid-template-columns:1fr}}</style>
+.catalogue-panel{width:100%;max-width:760px;background:#fff;border:1px solid #e1e8df;border-radius:16px;padding:16px;margin-top:4px}.catalogue-panel h3{margin:0 0 5px;font-size:16px;color:#203d2a}.catalogue-panel>p{margin:0 0 13px;color:#718075;font-size:12px}.catalogue-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.catalogue-item{border:1px solid #e7ece5;background:#fbfcfa;border-radius:12px;padding:11px}.catalogue-item strong{display:block;font-size:12px;color:#254b34;margin-bottom:4px}.catalogue-item span{display:block;font-size:11px;color:#6e7b70;line-height:1.45}.catalogue-foot{font-size:11px!important;margin-top:12px!important;padding-top:10px;border-top:1px solid #edf0eb}@media(max-width:480px){.catalogue-grid{grid-template-columns:1fr}}
+.catalogue-tabs{display:flex;gap:8px;margin:12px 0}.catalogue-tabs .active{background:#244b35;color:#fff;border-color:#244b35}.catalogue-search{width:100%;padding:10px 12px;border:1px solid #dfe6dc;border-radius:10px;margin-bottom:12px;font:inherit;font-size:13px}.catalogue-entry{border:1px solid #e5ebe2;border-radius:13px;padding:13px;margin:10px 0;background:#fff}.catalogue-entry h4{margin:0 0 10px;color:#244b35;font-size:14px}.catalogue-plans{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.catalogue-plan{border:1px solid #e8ede6;border-radius:10px;padding:10px;min-width:0}.catalogue-plan strong,.catalogue-plan b,.catalogue-plan small{display:block}.catalogue-plan strong{font-size:12px;color:#426247}.catalogue-plan b{font-size:14px;color:#1c301f;margin:5px 0}.catalogue-plan small{font-size:10px;color:#788579}.catalogue-plan ul{padding-left:17px;margin:8px 0;font-size:11px;color:#59675c}.catalogue-plan li{margin:3px 0}.catalogue-plan p{font-size:11px;color:#59675c}.catalogue-plan .chip{margin-top:8px;white-space:normal}.catalogue-note{margin-top:7px;color:#8a6c34!important}.catalogue-foot{font-size:10px!important;line-height:1.5;margin-top:12px!important}@media(max-width:560px){.catalogue-plans{grid-template-columns:1fr}}</style>
 </head>
 <body>
 <div class="shell">
@@ -168,66 +169,80 @@ catalogueButton.textContent = "Explore ATSFY catalogue";
 catalogueButton.onclick = showCatalogue;
 tools.prepend(catalogueButton);
 
-function showCatalogue() {
+let salesCatalogueCache = null;
+async function getSalesCatalogue() {
+  if (salesCatalogueCache) return salesCatalogueCache;
+  const response = await fetch("/catalogue.json", { cache: "no-cache" });
+  if (!response.ok) throw new Error("The pricing catalogue is temporarily unavailable.");
+  salesCatalogueCache = await response.json();
+  return salesCatalogueCache;
+}
+function priceLabel(item) {
+  if (item.price == null) return "Custom quote";
+  const value = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(item.price);
+  const unit = item.billing === "Monthly" ? " / month" : item.billing === "Per report" ? " / report" : item.billing === "Per learner" ? " / learner" : item.billing === "Per session" ? " / session" : item.billing === "From" ? " onwards" : "";
+  return value + unit;
+}
+async function showCatalogue() {
   const wrap = document.createElement("div");
   wrap.className = "m bot";
   wrap.style.cssText = "max-width:100%;width:100%;background:transparent;border:0;padding:0";
   const panel = document.createElement("section");
   panel.className = "catalogue-panel";
-  const heading = document.createElement("h3");
-  heading.textContent = "ATSFY Products & Services";
-  panel.appendChild(heading);
-  const intro = document.createElement("p");
-  intro.textContent = "Explore our digital solutions. We’ll help you choose the right starting point for your business.";
-  panel.appendChild(intro);
-  const groups = [
-    { title: "Services", items: [
-      ["Websites & e-commerce", "Business websites, online stores, portals and custom web applications."],
-      ["Android & iOS apps", "Mobile app planning, UI/UX, development and integrations."],
-      ["AI assistants & automation", "AI chat assistants, workflow automation and business process tools."],
-      ["Business intelligence", "Dashboards, reporting, analytics and decision-support tools."],
-      ["Digital growth", "UI/UX, SEO, ASO, digital presence and technical support."],
-      ["Startup & digital enablement", "Digital product guidance, founder tools and AI/digital-skills workshops."]
-    ]},
-    { title: "Our product ecosystem", items: [
-      ["ATSFY Career Intelligence", "AI-assisted hiring and candidate intelligence."],
-      ["Anirudh Learner OS", "Digital learning tools and learner workspace."],
-      ["ExamAI India", "AI-enabled examination and evaluation workflows."],
-      ["Vital Health", "Fitness, wellness and habit-support experience."],
-      ["Green to Gold", "Agri-waste innovation and bio-composite solutions."],
-      ["Clinova", "Connected clinic and care-management concept."],
-      ["Founder tools", "Digital tools and guidance for startup builders."]
-    ]}
-  ];
-  groups.forEach(group => {
-    const label = document.createElement("p");
-    label.textContent = group.title;
-    label.style.cssText = "font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#9a783b;margin:15px 0 8px";
-    panel.appendChild(label);
-    const grid = document.createElement("div");
-    grid.className = "catalogue-grid";
-    group.items.forEach(([name, description]) => {
-      const card = document.createElement("div");
-      card.className = "catalogue-item";
-      const title = document.createElement("strong");
-      title.textContent = name;
-      const detail = document.createElement("span");
-      detail.textContent = description;
-      card.append(title, detail);
-      grid.appendChild(card);
-    });
-    panel.appendChild(grid);
-  });
-  const foot = document.createElement("p");
-  foot.className = "catalogue-foot";
-  foot.textContent = "Selected service offers start from ₹4,999. Custom projects are quoted after understanding the scope. Product demos, current availability, timelines and final pricing are confirmed by the ATSFY team.";
-  panel.appendChild(foot);
+  panel.innerHTML = '<h3>ATSFY Products & Services · Pricing Catalogue</h3><p>Explore public indicative pricing. Choose a package to discuss scope with our team.</p><div class="catalogue-tabs"><button type="button" class="chip" data-catalogue-tab="services">Services</button><button type="button" class="chip" data-catalogue-tab="products">Products</button></div><input class="catalogue-search" type="search" placeholder="Search services, products or packages…" aria-label="Search pricing catalogue"><div class="catalogue-results" aria-live="polite"></div><p class="catalogue-foot"></p>';
   wrap.appendChild(panel);
   log.appendChild(wrap);
-  addWhatsAppLink(wrap, "Hello ATSFY, I explored your products and services catalogue. Please help me understand the most suitable option for my requirement.", "Discuss this catalogue with ATSFY →");
+  log.scrollTop = log.scrollHeight;
+  const results = panel.querySelector(".catalogue-results");
+  const search = panel.querySelector(".catalogue-search");
+  const foot = panel.querySelector(".catalogue-foot");
+  let activeTab = "services";
+  let catalogue;
+  try { catalogue = await getSalesCatalogue(); }
+  catch (error) { results.textContent = error.message; return; }
+  foot.textContent = [catalogue.taxNote, catalogue.negotiationNote, catalogue.disclaimer].filter(Boolean).join(" ");
+  function render() {
+    const source = activeTab === "services" ? catalogue.services : catalogue.products;
+    const query = search.value.trim().toLowerCase();
+    const cards = Object.entries(source).filter(([id, item]) => [id, item.name, ...(item.packages || item.offers || []).flatMap(p => [p.tier, p.billing, ...(p.includes || []), p.description || ""])].join(" ").toLowerCase().includes(query));
+    results.innerHTML = "";
+    if (!cards.length) { results.textContent = "No matching catalogue items."; return; }
+    cards.forEach(([id, item]) => {
+      const card = document.createElement("article");
+      card.className = "catalogue-entry";
+      const title = document.createElement("h4"); title.textContent = item.name; card.appendChild(title);
+      const plans = document.createElement("div"); plans.className = "catalogue-plans";
+      (item.packages || item.offers || []).forEach(plan => {
+        const block = document.createElement("div"); block.className = "catalogue-plan";
+        const tier = document.createElement("strong"); tier.textContent = plan.tier; block.appendChild(tier);
+        const price = document.createElement("b"); price.textContent = priceLabel(plan); block.appendChild(price);
+        const billing = document.createElement("small"); billing.textContent = plan.billing || ""; block.appendChild(billing);
+        if (plan.includes?.length) {
+          const list = document.createElement("ul");
+          plan.includes.forEach(line => { const li = document.createElement("li"); li.textContent = line; list.appendChild(li); });
+          block.appendChild(list);
+        } else if (plan.description) {
+          const desc = document.createElement("p"); desc.textContent = plan.description; block.appendChild(desc);
+        }
+        if (plan.note) { const note = document.createElement("small"); note.className = "catalogue-note"; note.textContent = plan.note; block.appendChild(note); }
+        const choose = document.createElement("button"); choose.type = "button"; choose.className = "chip"; choose.textContent = "Discuss this package";
+        choose.onclick = () => send("I’m interested in " + item.name + " — " + plan.tier + " (" + priceLabel(plan) + "). Please explain the scope, any exclusions and the next step. I understand this is indicative pricing pending ATSFY confirmation.");
+        block.appendChild(choose); plans.appendChild(block);
+      });
+      card.appendChild(plans); results.appendChild(card);
+    });
+  }
+  panel.querySelectorAll("[data-catalogue-tab]").forEach(button => button.addEventListener("click", () => {
+    activeTab = button.dataset.catalogueTab;
+    panel.querySelectorAll("[data-catalogue-tab]").forEach(b => b.classList.toggle("active", b === button));
+    render();
+  }));
+  panel.querySelector('[data-catalogue-tab="services"]').classList.add("active");
+  search.addEventListener("input", render);
+  render();
+  addWhatsAppLink(wrap, "Hello ATSFY, I explored your Sales Agent pricing catalogue. Please help me choose a suitable package for my requirement.", "Discuss pricing with ATSFY →");
   log.scrollTop = log.scrollHeight;
 }
-
 function addSaveProposalAction(container) {
   const b = document.createElement("button");
   b.type = "button";
