@@ -1,5 +1,7 @@
 const STATUSES = new Set(["new","contacted","qualified","proposal","negotiation","won","lost","not_interested"]);
 const CHANNELS = new Set(["whatsapp","email","call","internal"]);
+const catalogue = require("../../catalogue.json");
+const { catalogueOffers, validateQuote } = require("../../lib/pricing-guard");
 function json(res,status,body){return res.status(status).setHeader("Cache-Control","no-store").json(body)}
 function parseBody(req){return typeof req.body==="string"?JSON.parse(req.body):req.body||{}}
 function clean(v,max=2000){return typeof v==="string"?v.trim().slice(0,max):""}
@@ -90,8 +92,17 @@ module.exports=async function handler(req,res){
    }
    if(kind==="proposal"){
     const title=clean(b.title,180);const min=b.price_min===""||b.price_min==null?null:Number(b.price_min),max=b.price_max===""||b.price_max==null?null:Number(b.price_max);
-    if(!title||((min!==null&&(!Number.isFinite(min)||min<0))||(max!==null&&(!Number.isFinite(max)||max<0)))||(min!==null&&max!==null&&max<min))return json(res,400,{error:"Enter a title and valid INR price range."});
-    const scope={description:clean(b.scope,4000),deliverables:Array.isArray(b.deliverables)?b.deliverables.map(x=>clean(x,180)).filter(Boolean).slice(0,20):[],terms:"Draft only. Subject to ATSFy review and confirmation."};
+    if(!title||((min!==null&&(!Number.isFinite(min)||min<=0))||(max!==null&&(!Number.isFinite(max)||max<=0)))||(min!==null&&max!==null&&max<min)||(min===null)!==(max===null))return json(res,400,{error:"Enter a title and a complete positive INR price range, or leave both prices blank."});
+    let pricing=null;
+    if(min!==null){
+     const offer=catalogueOffers(catalogue).find(x=>x.kind===b.catalogue_kind&&x.item_key===b.catalogue_key&&x.offer_tier===b.offer_tier);
+     if(!offer)return json(res,400,{error:"A priced proposal must be linked to a fixed-price catalogue tier. Select the offer from Pricing catalogue first."});
+     if(offer.list_price==null)return json(res,400,{error:"Custom-quote offers require separate founder review and cannot be priced through the standard proposal form."});
+     const rules=await rest(s,"pricing_rules?item_kind=eq."+encodeURIComponent(offer.kind)+"&item_key=eq."+encodeURIComponent(offer.item_key)+"&offer_tier=eq."+encodeURIComponent(offer.offer_tier)+"&select=minimum_sell_price,max_discount_percent");
+     const rule=Array.isArray(rules)&&rules[0]?rules[0]:null;
+     try{pricing=validateQuote({offer,rule,priceMin:min,priceMax:max})}catch(error){return json(res,409,{error:error.message})}
+    }
+    const scope={description:clean(b.scope,4000),deliverables:Array.isArray(b.deliverables)?b.deliverables.map(x=>clean(x,180)).filter(Boolean).slice(0,20):[],pricing:pricing?{catalogue_kind:b.catalogue_kind,catalogue_key:b.catalogue_key,offer_tier:b.offer_tier,...pricing}:null,terms:"Draft only. Subject to ATSFy review and confirmation. No discount below the protected minimum sell price is permitted."};
     const row=await rest(s,"proposals",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({lead_id:leadId,title,scope,price_min:min,price_max:max,currency:"INR",status:"draft"})});
     return json(res,201,{item:Array.isArray(row)?row[0]:row});
    }
