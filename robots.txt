@@ -1,29 +1,52 @@
 # Public discovery rules for ATSFY Sales Agent
+# Keep private administration and server endpoints out of search indexes.
 User-agent: *
 Allow: /
 Disallow: /admin.html
 Disallow: /api/
 Disallow: /_vercel/
 
+# Search and AI discovery crawlers
 User-agent: Googlebot
 Allow: /
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /_vercel/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /_vercel/
 
 User-agent: GPTBot
 Allow: /
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /_vercel/
 
 User-agent: OAI-SearchBot
 Allow: /
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /_vercel/
 
 User-agent: ChatGPT-User
 Allow: /
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /_vercel/
 
 User-agent: ClaudeBot
 Allow: /
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /_vercel/
 
 User-agent: PerplexityBot
 Allow: /
+Disallow: /admin.html
+Disallow: /api/
+Disallow: /_vercel/
 
 Sitemap: https://atsfysalesagent.vercel.app/sitemap.xml
