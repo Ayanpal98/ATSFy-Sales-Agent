@@ -11,7 +11,7 @@ async function auth(req){
  if(!url||!key||!token)return null;
  const r=await fetch(url.replace(/\/$/,"")+"/auth/v1/user",{headers:{apikey:key,Authorization:"Bearer "+token},signal:AbortSignal.timeout(10000)});
  if(!r.ok)return null;const user=await r.json().catch(()=>null);
- return user?.app_metadata?.role==="admin"?{url:url.replace(/\/$/,""),key,token,user}:null;
+ return ["admin","founder"].includes(user?.app_metadata?.role)?{url:url.replace(/\/$/,""),key,token,user}:null;
 }
 async function rest(s,path,options={}){
  const r=await fetch(s.url+"/rest/v1/"+path,{...options,headers:{apikey:s.key,Authorization:"Bearer "+s.token,"Content-Type":"application/json",...(options.headers||{})},signal:AbortSignal.timeout(12000)});
