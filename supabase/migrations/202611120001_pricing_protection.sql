@@ -24,7 +24,7 @@ create table if not exists public.pricing_rule_events (
   item_kind text not null,
   item_key text not null,
   offer_tier text not null,
-  action text not null check (action in ('created','updated')),
+  action text not null check (action in ('created','updated','founder_override')),
   previous_values jsonb,
   new_values jsonb not null,
   actor_id uuid references auth.users(id) on delete set null,
