@@ -1,5 +1,7 @@
 const STATUSES = new Set(["new","contacted","qualified","proposal","negotiation","won","lost","not_interested"]);
 const CHANNELS = new Set(["whatsapp","email","call","internal"]);
+const catalogue = require("../../catalogue.json");
+const { catalogueOffers, validateQuote } = require("../../lib/pricing-guard");
 function json(res,status,body){return res.status(status).setHeader("Cache-Control","no-store").json(body)}
 function parseBody(req){return typeof req.body==="string"?JSON.parse(req.body):req.body||{}}
 function clean(v,max=2000){return typeof v==="string"?v.trim().slice(0,max):""}
@@ -9,7 +11,7 @@ async function auth(req){
  if(!url||!key||!token)return null;
  const r=await fetch(url.replace(/\/$/,"")+"/auth/v1/user",{headers:{apikey:key,Authorization:"Bearer "+token},signal:AbortSignal.timeout(10000)});
  if(!r.ok)return null;const user=await r.json().catch(()=>null);
- return user?.app_metadata?.role==="admin"?{url:url.replace(/\/$/,""),key,token,user}:null;
+ return ["admin","founder"].includes(user?.app_metadata?.role)?{url:url.replace(/\/$/,""),key,token,user}:null;
 }
 async function rest(s,path,options={}){
  const r=await fetch(s.url+"/rest/v1/"+path,{...options,headers:{apikey:s.key,Authorization:"Bearer "+s.token,"Content-Type":"application/json",...(options.headers||{})},signal:AbortSignal.timeout(12000)});
@@ -90,8 +92,29 @@ module.exports=async function handler(req,res){
    }
    if(kind==="proposal"){
     const title=clean(b.title,180);const min=b.price_min===""||b.price_min==null?null:Number(b.price_min),max=b.price_max===""||b.price_max==null?null:Number(b.price_max);
-    if(!title||((min!==null&&(!Number.isFinite(min)||min<0))||(max!==null&&(!Number.isFinite(max)||max<0)))||(min!==null&&max!==null&&max<min))return json(res,400,{error:"Enter a title and valid INR price range."});
-    const scope={description:clean(b.scope,4000),deliverables:Array.isArray(b.deliverables)?b.deliverables.map(x=>clean(x,180)).filter(Boolean).slice(0,20):[],terms:"Draft only. Subject to ATSFy review and confirmation."};
+    if(!title||((min!==null&&(!Number.isFinite(min)||min<=0))||(max!==null&&(!Number.isFinite(max)||max<=0)))||(min!==null&&max!==null&&max<min)||(min===null)!==(max===null))return json(res,400,{error:"Enter a title and a complete positive INR price range, or leave both prices blank."});
+    let pricing=null;
+    if(min!==null){
+     const offer=catalogueOffers(catalogue).find(x=>x.kind===b.catalogue_kind&&x.item_key===b.catalogue_key&&x.offer_tier===b.offer_tier);
+     if(!offer)return json(res,400,{error:"A priced proposal must be linked to a fixed-price catalogue tier. Select the offer from Pricing catalogue first."});
+     if(offer.list_price==null)return json(res,400,{error:"Custom-quote offers require separate founder review and cannot be priced through the standard proposal form."});
+     const rules=await rest(s,"pricing_rules?item_kind=eq."+encodeURIComponent(offer.kind)+"&item_key=eq."+encodeURIComponent(offer.item_key)+"&offer_tier=eq."+encodeURIComponent(offer.offer_tier)+"&select=minimum_sell_price,max_discount_percent");
+     const rule=Array.isArray(rules)&&rules[0]?rules[0]:null;
+     const permissions=s.user.app_metadata?.permissions||[];
+     const isFounder=s.user.app_metadata?.role==="founder"||permissions.includes("pricing_override");
+     const overrideReason=clean(b.founder_override_reason,500);
+     try{pricing=validateQuote({offer,rule,priceMin:min,priceMax:max,founderOverride:isFounder&&Boolean(overrideReason)})}catch(error){return json(res,409,{error:error.message})}
+     if(pricing.founder_override&&!overrideReason)return json(res,403,{error:"A founder override requires a written reason."});
+     if(pricing.founder_override){
+      await rest(s,"pricing_rule_events",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({
+       rule_id:rule?.id||null,item_kind:offer.kind,item_key:offer.item_key,offer_tier:offer.offer_tier,
+       action:"founder_override",previous_values:rule||null,
+       new_values:{proposal_price_min:min,proposal_price_max:max,discount_percent:pricing.discount_percent,reason:overrideReason},
+       actor_id:s.user.id
+      })});
+     }
+    }
+    const scope={description:clean(b.scope,4000),deliverables:Array.isArray(b.deliverables)?b.deliverables.map(x=>clean(x,180)).filter(Boolean).slice(0,20):[],pricing:pricing?{catalogue_kind:b.catalogue_kind,catalogue_key:b.catalogue_key,offer_tier:b.offer_tier,...pricing}:null,terms:"Draft only. Subject to ATSFy review and confirmation. No discount below the protected minimum sell price is permitted."};
     const row=await rest(s,"proposals",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({lead_id:leadId,title,scope,price_min:min,price_max:max,currency:"INR",status:"draft"})});
     return json(res,201,{item:Array.isArray(row)?row[0]:row});
    }

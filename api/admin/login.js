@@ -25,7 +25,7 @@ module.exports = async function handler(req, res) {
       headers: { "apikey": key, "Authorization": "Bearer " + payload.access_token }, signal: AbortSignal.timeout(12000)
     });
     const user = await check.json().catch(() => ({}));
-    if (!check.ok || user?.app_metadata?.role !== "admin") return json(res, 403, { error: "This account is not authorized for the ATSFy admin dashboard." });
+    if (!check.ok || !["admin","founder"].includes(user?.app_metadata?.role)) return json(res, 403, { error: "This account is not authorized for the ATSFy admin dashboard." });
     return json(res, 200, { access_token: payload.access_token, expires_in: payload.expires_in, user: { id: user.id, email: user.email } });
   } catch (error) {
     console.error("Admin login error:", error?.name || "Error");
