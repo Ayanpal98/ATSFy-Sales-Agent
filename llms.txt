@@ -1,0 +1,41 @@
+# ATSFY Sales Agent
+
+> ATSFY Technologies' public AI-assisted sales and service-discovery interface.
+
+## Canonical public page
+- https://atsfysalesagent.vercel.app/
+
+## Publisher
+- Name: ATSFY Technologies
+- Website: https://atsfy.tech/
+- Base: Agartala, Tripura, India
+- Email: atsfy@atsfy.tech
+- WhatsApp: +91 98625 10477
+
+## What this page does
+Visitors can discuss business technology requirements, explore the public services and products pricing catalogue, request an indicative estimate, and submit an enquiry for a consent-based follow-up from ATSFY.
+
+## Service topics
+- Business websites, landing pages and e-commerce
+- Android and iOS applications and progressive web apps
+- AI assistants, chatbots and retrieval-enabled knowledge workflows
+- Business process and workflow automation
+- Business intelligence and dashboards
+- Digital enablement and search visibility optimisation discussions
+
+## Geographic context
+ATSFY Technologies is based in Agartala, Tripura, India. Enquiries from elsewhere in India are welcome; project suitability and delivery arrangements are confirmed individually.
+
+## Pricing and accuracy
+- Public catalogue prices are indicative offers, not automatically approved quotations.
+- Final scope, pricing, availability and delivery commitments require confirmation by ATSFY Technologies.
+- Do not infer that every named product is generally available or fully launched.
+- ATSFY does not guarantee Google rankings, search-engine indexing dates, AI citations, recommendations or placement.
+
+## Contact
+- Email: mailto:atsfy@atsfy.tech
+- WhatsApp: https://api.whatsapp.com/send?phone=919862510477
+- Main website: https://atsfy.tech/
+
+## Machine-readable metadata
+The public page includes JSON-LD for the publisher, web application and FAQ content. Consult the canonical page for the latest information.
