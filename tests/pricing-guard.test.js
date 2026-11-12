@@ -33,3 +33,17 @@ test("custom quote offers cannot be assigned automatic prices", () => {
   const custom = catalogueOffers(catalogue).find(x => x.kind === "product" && x.item_key === "green-to-gold");
   assert.throws(() => validateQuote({ offer: custom, rule: null, priceMin: 1000, priceMax: 2000 }), /fixed-price catalogue tier/);
 });
+
+test("founder override can exceed the discount approval limit but never the hard floor", () => {
+  const rule = { minimum_sell_price: 20000, max_discount_percent: 5 };
+  assert.throws(() => validateQuote({ offer, rule, priceMin: 22000, priceMax: 22000 }), /exceeds the approved limit/);
+  assert.equal(validateQuote({ offer, rule, priceMin: 22000, priceMax: 22000, founderOverride: true }).founder_override, true);
+  assert.throws(() => validateQuote({ offer, rule, priceMin: 19000, priceMax: 20000, founderOverride: true }), /protected minimum sell price/);
+});
+
+test("a pricing rule cannot permit a discount greater than its verified floor supports", () => {
+  assert.throws(() => validatePricingRule({
+    delivery_cost: 10000, market_floor_price: 14000, market_evidence_url: "https://example.com/pricing",
+    minimum_margin_percent: 30, max_discount_percent: 45
+  }, 25000), /cannot exceed the verified minimum-price boundary/);
+});
