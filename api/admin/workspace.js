@@ -100,7 +100,19 @@ module.exports=async function handler(req,res){
      if(offer.list_price==null)return json(res,400,{error:"Custom-quote offers require separate founder review and cannot be priced through the standard proposal form."});
      const rules=await rest(s,"pricing_rules?item_kind=eq."+encodeURIComponent(offer.kind)+"&item_key=eq."+encodeURIComponent(offer.item_key)+"&offer_tier=eq."+encodeURIComponent(offer.offer_tier)+"&select=minimum_sell_price,max_discount_percent");
      const rule=Array.isArray(rules)&&rules[0]?rules[0]:null;
-     try{pricing=validateQuote({offer,rule,priceMin:min,priceMax:max})}catch(error){return json(res,409,{error:error.message})}
+     const permissions=s.user.app_metadata?.permissions||[];
+     const isFounder=s.user.app_metadata?.role==="founder"||permissions.includes("pricing_override");
+     const overrideReason=clean(b.founder_override_reason,500);
+     try{pricing=validateQuote({offer,rule,priceMin:min,priceMax:max,founderOverride:isFounder&&Boolean(overrideReason)})}catch(error){return json(res,409,{error:error.message})}
+     if(pricing.founder_override&&!overrideReason)return json(res,403,{error:"A founder override requires a written reason."});
+     if(pricing.founder_override){
+      await rest(s,"pricing_rule_events",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({
+       rule_id:rule?.id||null,item_kind:offer.kind,item_key:offer.item_key,offer_tier:offer.offer_tier,
+       action:"founder_override",previous_values:rule||null,
+       new_values:{proposal_price_min:min,proposal_price_max:max,discount_percent:pricing.discount_percent,reason:overrideReason},
+       actor_id:s.user.id
+      })});
+     }
     }
     const scope={description:clean(b.scope,4000),deliverables:Array.isArray(b.deliverables)?b.deliverables.map(x=>clean(x,180)).filter(Boolean).slice(0,20):[],pricing:pricing?{catalogue_kind:b.catalogue_kind,catalogue_key:b.catalogue_key,offer_tier:b.offer_tier,...pricing}:null,terms:"Draft only. Subject to ATSFy review and confirmation. No discount below the protected minimum sell price is permitted."};
     const row=await rest(s,"proposals",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({lead_id:leadId,title,scope,price_min:min,price_max:max,currency:"INR",status:"draft"})});
