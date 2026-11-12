@@ -1,0 +1,1134 @@
+{
+  "version": "2026-11-12",
+  "currency": "INR",
+  "taxNote": "All displayed prices are indicative, exclusive of applicable GST. A written scope and final quotation govern each engagement.",
+  "negotiationNote": "Tell us your budget and priority outcome. We can tailor the scope, phase delivery or propose a smaller starting package. We do not reduce a fixed scope below the price needed to deliver it responsibly.",
+  "disclaimer": "Indicative catalogue pricing, not a binding offer. Confirm current availability, usage limits, exact deliverables, timeline, taxes and third-party costs in a written proposal before payment.",
+  "services": {
+    "whatsapp-automation": {
+      "name": "WhatsApp Automation System",
+      "packages": [
+        {
+          "tier": "Starter",
+          "price": 25000,
+          "billing": "One-time",
+          "includes": [
+            "Business flow mapping",
+            "Click-to-chat and enquiry capture",
+            "Lead routing and handover",
+            "Testing and staff walkthrough"
+          ],
+          "note": "Meta/BSP, template and per-message charges are separate."
+        },
+        {
+          "tier": "AI assistant",
+          "price": 75000,
+          "billing": "One-time",
+          "includes": [
+            "Conversation design",
+            "FAQ knowledge setup",
+            "WhatsApp API integration",
+            "Human handoff and QA"
+          ],
+          "note": "Meta/BSP, model usage, hosting and messaging charges are separate."
+        },
+        {
+          "tier": "CRM-connected",
+          "price": 150000,
+          "billing": "One-time",
+          "includes": [
+            "Discovery and architecture",
+            "AI workflow build",
+            "CRM/API integration",
+            "Approval controls, QA and handover"
+          ],
+          "note": "No unsolicited outbound messaging; approved templates and consent rules apply."
+        }
+      ]
+    },
+    "website-development": {
+      "name": "Website Development",
+      "packages": [
+        {
+          "tier": "Landing page",
+          "price": 25000,
+          "billing": "One-time",
+          "includes": [
+            "UX and visual design",
+            "Responsive page build",
+            "Enquiry forms and integrations",
+            "SEO basics, performance and QA"
+          ],
+          "note": "Domain, hosting, premium plugins, copywriting and photography are extra unless written into scope."
+        },
+        {
+          "tier": "Business website",
+          "price": 55000,
+          "billing": "One-time",
+          "includes": [
+            "UX/UI and design system",
+            "Up to 8 responsive pages",
+            "CMS and enquiry forms",
+            "On-page SEO, analytics and QA"
+          ],
+          "note": "Page count, content migration, languages and integrations affect final quote."
+        },
+        {
+          "tier": "E-commerce",
+          "price": 125000,
+          "billing": "One-time",
+          "includes": [
+            "Storefront UX/UI",
+            "Product catalogue and cart",
+            "Checkout and payment integration",
+            "Order workflows, QA and handover"
+          ],
+          "note": "Gateway, shipping, platform and SKU/content-entry fees are separate."
+        }
+      ]
+    },
+    "branding-logo-design": {
+      "name": "Branding & Logo Design",
+      "packages": [
+        {
+          "tier": "Logo starter",
+          "price": 15000,
+          "billing": "One-time",
+          "includes": [
+            "Discovery and brief",
+            "Two concept directions",
+            "Refinement and final logo",
+            "Export files and handover"
+          ],
+          "note": "Trademark search/filing, naming and extensive illustration are excluded."
+        },
+        {
+          "tier": "Brand identity",
+          "price": 35000,
+          "billing": "One-time",
+          "includes": [
+            "Brand discovery",
+            "Logo suite and visual system",
+            "Colour, type and voice guide",
+            "Social and stationery assets"
+          ],
+          "note": "Print production and paid stock assets are extra."
+        },
+        {
+          "tier": "Complete brand system",
+          "price": 65000,
+          "billing": "One-time",
+          "includes": [
+            "Brand strategy",
+            "Full identity system",
+            "Detailed brand guidelines",
+            "Collateral templates and handover"
+          ],
+          "note": "Ongoing content and campaign production are separate."
+        }
+      ]
+    },
+    "social-media-management": {
+      "name": "Social Media Management",
+      "packages": [
+        {
+          "tier": "Essential",
+          "price": 18000,
+          "billing": "Monthly",
+          "includes": [
+            "Monthly strategy and calendar",
+            "8–12 static posts",
+            "Captions and scheduling",
+            "Monthly performance summary"
+          ],
+          "note": "Ad spend, shoots, creator fees and full-time inbox management excluded."
+        },
+        {
+          "tier": "Growth",
+          "price": 40000,
+          "billing": "Monthly",
+          "includes": [
+            "Multi-platform content plan",
+            "12–16 posts",
+            "Up to 4 short edits from supplied footage",
+            "Publishing and reporting"
+          ],
+          "note": "Ad spend, shoots and creator fees excluded."
+        },
+        {
+          "tier": "Premium",
+          "price": 75000,
+          "billing": "Monthly",
+          "includes": [
+            "Campaign strategy",
+            "20+ content assets",
+            "Up to 8 short edits from supplied footage",
+            "Publishing, community scope and reporting"
+          ],
+          "note": "On-location production and ad spend separately quoted."
+        }
+      ]
+    },
+    "ai-chatbots": {
+      "name": "AI Chatbots",
+      "packages": [
+        {
+          "tier": "Website FAQ assistant",
+          "price": 60000,
+          "billing": "One-time",
+          "includes": [
+            "Conversation design",
+            "FAQ and knowledge setup",
+            "Website widget integration",
+            "Testing and human handoff"
+          ],
+          "note": "Model usage, hosting and ongoing maintenance are recurring extras."
+        },
+        {
+          "tier": "RAG knowledge assistant",
+          "price": 150000,
+          "billing": "One-time",
+          "includes": [
+            "Source data review",
+            "Document preparation",
+            "Retrieval and answer pipeline",
+            "Citations, evaluation and admin handover"
+          ],
+          "note": "Large-scale data cleaning, hosting and model usage are extra."
+        },
+        {
+          "tier": "Integrated action assistant",
+          "price": 350000,
+          "billing": "One-time",
+          "includes": [
+            "Solution architecture",
+            "Agent and workflow engineering",
+            "Approved API integrations",
+            "Audit controls, evaluation and QA"
+          ],
+          "note": "Actions with external impact require scoped approvals; third-party costs extra."
+        }
+      ]
+    },
+    "marketing-automation": {
+      "name": "Marketing Automation",
+      "packages": [
+        {
+          "tier": "Single funnel",
+          "price": 45000,
+          "billing": "One-time",
+          "includes": [
+            "Customer journey mapping",
+            "One lead funnel",
+            "Up to 3 automation steps",
+            "Integration, QA and handover"
+          ],
+          "note": "Email/SMS/WhatsApp provider subscriptions and message credits excluded."
+        },
+        {
+          "tier": "CRM and nurture",
+          "price": 90000,
+          "billing": "One-time",
+          "includes": [
+            "CRM pipeline setup",
+            "Lead scoring rules",
+            "Up to 2 nurture journeys",
+            "Integrations, reporting and training"
+          ],
+          "note": "No outbound communication without appropriate consent and approval."
+        },
+        {
+          "tier": "Lifecycle automation",
+          "price": 180000,
+          "billing": "One-time",
+          "includes": [
+            "Lifecycle architecture",
+            "Segmentation and event triggers",
+            "Multi-journey automation",
+            "Integrations, QA and reporting"
+          ],
+          "note": "Third-party licences and message charges are separate."
+        }
+      ]
+    },
+    "local-seo": {
+      "name": "Local SEO",
+      "packages": [
+        {
+          "tier": "Local foundation",
+          "price": 15000,
+          "billing": "Monthly",
+          "includes": [
+            "Local search audit",
+            "Google Business Profile optimisation",
+            "Local keyword and on-page fixes",
+            "Citation and review plan"
+          ],
+          "note": "No ranking or lead guarantees; multi-location work separately quoted."
+        },
+        {
+          "tier": "Local growth",
+          "price": 30000,
+          "billing": "Monthly",
+          "includes": [
+            "Technical and local SEO",
+            "Location-focused content updates",
+            "Local landing page improvements",
+            "Citation and monthly reporting"
+          ],
+          "note": "Content volume and outreach limits defined in proposal."
+        },
+        {
+          "tier": "Multi-location",
+          "price": 60000,
+          "billing": "Monthly",
+          "includes": [
+            "Multi-location strategy",
+            "Technical and on-page SEO",
+            "Location page programme",
+            "Reputation and performance reporting"
+          ],
+          "note": "Competition, location count and content production determine scope."
+        }
+      ]
+    },
+    "digital-marketing": {
+      "name": "Digital Marketing",
+      "packages": [
+        {
+          "tier": "Single-channel management",
+          "price": 25000,
+          "billing": "Monthly",
+          "includes": [
+            "Campaign strategy",
+            "One paid channel setup",
+            "Creative coordination",
+            "Optimisation and reporting"
+          ],
+          "note": "Advertising budget is paid by client directly and is not included."
+        },
+        {
+          "tier": "Growth campaigns",
+          "price": 50000,
+          "billing": "Monthly",
+          "includes": [
+            "Two-channel campaign plan",
+            "Campaign and conversion tracking",
+            "Creative testing",
+            "Optimisation and reporting"
+          ],
+          "note": "Ad spend, creator fees and landing page development excluded."
+        },
+        {
+          "tier": "Performance programme",
+          "price": 90000,
+          "billing": "Monthly",
+          "includes": [
+            "Multi-campaign strategy",
+            "Campaign operations",
+            "Creative and funnel testing",
+            "Optimisation and analytics"
+          ],
+          "note": "No guaranteed ROAS, sales or lead volume; media budget excluded."
+        }
+      ]
+    },
+    "custom-saas-development": {
+      "name": "Custom SaaS Development",
+      "packages": [
+        {
+          "tier": "MVP build",
+          "price": 300000,
+          "billing": "One-time",
+          "includes": [
+            "Discovery and architecture",
+            "UX/UI and core workflows",
+            "Backend, authentication and admin",
+            "Integrations, QA and deployment"
+          ],
+          "note": "Final scope depends on roles, security, integrations and data migration."
+        },
+        {
+          "tier": "Growth platform",
+          "price": 600000,
+          "billing": "One-time",
+          "includes": [
+            "Product architecture",
+            "Multi-role UX and workflows",
+            "Core engineering and dashboards",
+            "Integrations, QA and security review"
+          ],
+          "note": "Cloud, licences, support and compliance audits excluded unless contracted."
+        },
+        {
+          "tier": "Enterprise platform",
+          "price": 1200000,
+          "billing": "One-time",
+          "includes": [
+            "Enterprise architecture",
+            "Role-based platform engineering",
+            "Integrations and auditability",
+            "Security testing and deployment"
+          ],
+          "note": "Complex scale, compliance, legacy integration and data migration require discovery."
+        }
+      ]
+    },
+    "ai-integration": {
+      "name": "AI Integration",
+      "packages": [
+        {
+          "tier": "Single AI capability",
+          "price": 75000,
+          "billing": "One-time",
+          "includes": [
+            "Use-case discovery",
+            "Data preparation",
+            "Model and workflow integration",
+            "Evaluation and handover"
+          ],
+          "note": "API usage, hosting and model charges are separate."
+        },
+        {
+          "tier": "Business AI workflow",
+          "price": 150000,
+          "billing": "One-time",
+          "includes": [
+            "AI workflow design",
+            "Knowledge grounding",
+            "One system integration",
+            "Evaluation and monitoring setup"
+          ],
+          "note": "Data cleanup, model usage and cloud costs are extra."
+        },
+        {
+          "tier": "Advanced AI system",
+          "price": 350000,
+          "billing": "One-time",
+          "includes": [
+            "AI architecture",
+            "Data pipeline",
+            "Multiple model capabilities",
+            "Integrations, evaluation and monitoring"
+          ],
+          "note": "Production agent actions need approvals and audit controls."
+        }
+      ]
+    },
+    "business-automation": {
+      "name": "Business Automation",
+      "packages": [
+        {
+          "tier": "Single workflow",
+          "price": 50000,
+          "billing": "One-time",
+          "includes": [
+            "Process mapping",
+            "One automated workflow",
+            "Up to 2 integrations",
+            "Testing and SOP handover"
+          ],
+          "note": "Third-party software and API fees excluded."
+        },
+        {
+          "tier": "Multi-workflow",
+          "price": 125000,
+          "billing": "One-time",
+          "includes": [
+            "Process discovery",
+            "Up to 4 connected workflows",
+            "Integration and exception handling",
+            "QA and documentation"
+          ],
+          "note": "Workflow and integration limits are fixed in the statement of work."
+        },
+        {
+          "tier": "Operations suite",
+          "price": 300000,
+          "billing": "One-time",
+          "includes": [
+            "Operations architecture",
+            "Department-level workflows",
+            "Multi-system integration",
+            "Controls, QA and training"
+          ],
+          "note": "Legacy access, licences and data remediation are additional."
+        }
+      ]
+    },
+    "custom-dashboards": {
+      "name": "Custom Dashboards",
+      "packages": [
+        {
+          "tier": "Operational dashboard",
+          "price": 60000,
+          "billing": "One-time",
+          "includes": [
+            "KPI discovery",
+            "Up to 2 data sources",
+            "Dashboard and filters",
+            "QA, export and handover"
+          ],
+          "note": "Data warehouse, licences and source-system fees excluded."
+        },
+        {
+          "tier": "BI suite",
+          "price": 125000,
+          "billing": "One-time",
+          "includes": [
+            "KPI and role discovery",
+            "Up to 4 data sources",
+            "Multiple dashboards",
+            "Permissions, QA and training"
+          ],
+          "note": "Data cleansing and warehouse engineering separately scoped."
+        },
+        {
+          "tier": "Enterprise analytics",
+          "price": 300000,
+          "billing": "One-time",
+          "includes": [
+            "Analytics architecture",
+            "Data engineering",
+            "Enterprise dashboard suite",
+            "Security, QA and handover"
+          ],
+          "note": "Complex data pipelines and licences are extra."
+        }
+      ]
+    },
+    "pitch-deck-development": {
+      "name": "Pitch Deck Development",
+      "packages": [
+        {
+          "tier": "Pitch deck",
+          "price": 25000,
+          "billing": "One-time",
+          "includes": [
+            "Story structure",
+            "Up to 12 designed slides",
+            "One revision round",
+            "Editable and PDF handover"
+          ],
+          "note": "No invented traction, financials, partnerships or investor commitments."
+        },
+        {
+          "tier": "Investor deck",
+          "price": 45000,
+          "billing": "One-time",
+          "includes": [
+            "Narrative and research",
+            "Up to 18 designed slides",
+            "Two revision rounds",
+            "Pitch flow and handover"
+          ],
+          "note": "Financial modelling and due diligence are separate."
+        },
+        {
+          "tier": "Deck plus model review",
+          "price": 75000,
+          "billing": "One-time",
+          "includes": [
+            "Narrative and research",
+            "Up to 20 designed slides",
+            "Assumption review",
+            "Q&A preparation"
+          ],
+          "note": "Client must verify all financial and market data; no funding guarantee."
+        }
+      ]
+    },
+    "startup-collateral": {
+      "name": "Startup Collateral",
+      "packages": [
+        {
+          "tier": "Founder starter kit",
+          "price": 15000,
+          "billing": "One-time",
+          "includes": [
+            "One-page company profile",
+            "Executive summary layout",
+            "Digital business card",
+            "Social profile assets"
+          ],
+          "note": "Printing and legal/trademark filings excluded."
+        },
+        {
+          "tier": "Launch kit",
+          "price": 30000,
+          "billing": "One-time",
+          "includes": [
+            "Company one-pager",
+            "Executive summary",
+            "Business stationery",
+            "Social and launch assets"
+          ],
+          "note": "Print production and premium photography excluded."
+        },
+        {
+          "tier": "Venture identity pack",
+          "price": 55000,
+          "billing": "One-time",
+          "includes": [
+            "Collateral strategy",
+            "Pitch one-pager and templates",
+            "Digital asset suite",
+            "Brand consistency review"
+          ],
+          "note": "Full brand identity is a separate service."
+        }
+      ]
+    },
+    "mvp-development": {
+      "name": "MVP Development",
+      "packages": [
+        {
+          "tier": "Clickable prototype",
+          "price": 75000,
+          "billing": "One-time",
+          "includes": [
+            "Product discovery",
+            "User flows and wireframes",
+            "Clickable UI prototype",
+            "Validation notes and handover"
+          ],
+          "note": "Prototype is not a production application; backend excluded."
+        },
+        {
+          "tier": "Functional MVP",
+          "price": 250000,
+          "billing": "One-time",
+          "includes": [
+            "Discovery and UX/UI",
+            "Core app and backend",
+            "Basic admin and integrations",
+            "QA and launch support"
+          ],
+          "note": "Feature list and security/data requirements determine final quote."
+        },
+        {
+          "tier": "Integrated MVP",
+          "price": 500000,
+          "billing": "One-time",
+          "includes": [
+            "Product architecture",
+            "Multi-workflow application",
+            "Role access and integrations",
+            "Analytics, QA and hardening"
+          ],
+          "note": "Cloud, licences and post-launch support excluded."
+        }
+      ]
+    },
+    "startup-guidance": {
+      "name": "Startup Guidance",
+      "packages": [
+        {
+          "tier": "Strategy session",
+          "price": 5000,
+          "billing": "Per session",
+          "includes": [
+            "Preparation and review",
+            "60–90 minute session",
+            "Written action summary",
+            "Next-step priorities"
+          ],
+          "note": "Not legal, tax, investment or funding advice."
+        },
+        {
+          "tier": "Validation sprint",
+          "price": 25000,
+          "billing": "One-time",
+          "includes": [
+            "Problem and customer framing",
+            "Validation experiment plan",
+            "Positioning and strategy",
+            "Roadmap review"
+          ],
+          "note": "Primary research execution and paid surveys excluded."
+        },
+        {
+          "tier": "Founder advisory",
+          "price": 50000,
+          "billing": "Monthly",
+          "includes": [
+            "Up to 4 advisory sessions",
+            "Async review within agreed scope",
+            "Monthly priorities",
+            "Action tracking"
+          ],
+          "note": "No guaranteed fundraising or commercial outcome."
+        }
+      ]
+    },
+    "institution-website-development": {
+      "name": "Institution Website Development",
+      "packages": [
+        {
+          "tier": "Institution website",
+          "price": 150000,
+          "billing": "One-time",
+          "includes": [
+            "Discovery and UX/UI",
+            "Responsive institutional website",
+            "Admission/contact workflows",
+            "CMS, QA and training"
+          ],
+          "note": "Content migration and ERP/payment integrations extra."
+        },
+        {
+          "tier": "Student/faculty portal",
+          "price": 300000,
+          "billing": "One-time",
+          "includes": [
+            "Portal architecture",
+            "Role-based dashboards",
+            "Admissions and records workflows",
+            "Integrations, QA and training"
+          ],
+          "note": "ERP, biometric and payment integrations separately scoped."
+        },
+        {
+          "tier": "Integrated institution platform",
+          "price": 600000,
+          "billing": "One-time",
+          "includes": [
+            "Platform architecture",
+            "Website and multi-role portal",
+            "Institution workflows and integrations",
+            "Migration, QA and rollout"
+          ],
+          "note": "Large deployments require discovery and data migration estimate."
+        }
+      ]
+    },
+    "education-digitalization": {
+      "name": "Education Digitalization",
+      "packages": [
+        {
+          "tier": "LMS setup",
+          "price": 75000,
+          "billing": "One-time",
+          "includes": [
+            "Needs assessment",
+            "LMS configuration",
+            "Basic course migration",
+            "Admin training and QA"
+          ],
+          "note": "LMS subscriptions, hosting and content licences extra."
+        },
+        {
+          "tier": "Digital learning suite",
+          "price": 150000,
+          "billing": "One-time",
+          "includes": [
+            "LMS and learner setup",
+            "Assessment workflows",
+            "Migration and integrations",
+            "Faculty training and reporting"
+          ],
+          "note": "Custom development and large-scale content creation extra."
+        },
+        {
+          "tier": "Institution transformation",
+          "price": 350000,
+          "billing": "One-time",
+          "includes": [
+            "Digital learning discovery",
+            "Multi-module platform setup",
+            "Workflow and integration",
+            "Migration, training and QA"
+          ],
+          "note": "Multi-campus deployment and third-party licences separately scoped."
+        }
+      ]
+    }
+  },
+  "products": {
+    "atsfy-core-career-intelligence": {
+      "name": "ATSFY Core Career Intelligence",
+      "offers": [
+        {
+          "tier": "Candidate report",
+          "price": 999,
+          "billing": "Per report",
+          "description": "Candidate ATS/resume intelligence report.",
+          "setupFee": null
+        },
+        {
+          "tier": "Professional report",
+          "price": 1499,
+          "billing": "Per report",
+          "description": "Enhanced candidate report.",
+          "setupFee": null
+        },
+        {
+          "tier": "Premium report",
+          "price": 2599,
+          "billing": "Per report",
+          "description": "Premium candidate report.",
+          "setupFee": null
+        },
+        {
+          "tier": "Recruiter Starter",
+          "price": 4499,
+          "billing": "Monthly",
+          "description": "Recruiter subscription; limits confirmed in proposal.",
+          "setupFee": null
+        },
+        {
+          "tier": "Recruiter Growth",
+          "price": 6999,
+          "billing": "Monthly",
+          "description": "Recruiter subscription; limits confirmed in proposal.",
+          "setupFee": null
+        },
+        {
+          "tier": "Recruiter Pro",
+          "price": 11999,
+          "billing": "Monthly",
+          "description": "Recruiter subscription; limits confirmed in proposal.",
+          "setupFee": null
+        }
+      ]
+    },
+    "gymos": {
+      "name": "GYMOS",
+      "offers": [
+        {
+          "tier": "Starter",
+          "price": 2999,
+          "billing": "Monthly",
+          "description": "Core gym member and membership workflows.",
+          "setupFee": null
+        },
+        {
+          "tier": "Growth",
+          "price": 5999,
+          "billing": "Monthly",
+          "description": "Expanded attendance, billing and reporting workflows.",
+          "setupFee": null
+        },
+        {
+          "tier": "Pro",
+          "price": 9999,
+          "billing": "Monthly",
+          "description": "Advanced gym operations; exact limits confirmed in quote.",
+          "setupFee": null
+        }
+      ]
+    },
+    "savoros": {
+      "name": "SavorOS",
+      "offers": [
+        {
+          "tier": "Starter",
+          "price": 2999,
+          "billing": "Monthly",
+          "description": "Digital menu and QR menu workflows.",
+          "setupFee": null
+        },
+        {
+          "tier": "Growth",
+          "price": 5999,
+          "billing": "Monthly",
+          "description": "Reservations and kitchen/floor workflows.",
+          "setupFee": null
+        },
+        {
+          "tier": "Pro",
+          "price": 9999,
+          "billing": "Monthly",
+          "description": "Advanced restaurant operations; scope confirmed in quote.",
+          "setupFee": null
+        }
+      ]
+    },
+    "atsfy-hotel-management-pms": {
+      "name": "ATSFY Hotel Management PMS",
+      "offers": [
+        {
+          "tier": "Starter",
+          "price": 4999,
+          "billing": "Monthly",
+          "description": "Core property reservation and room workflows.",
+          "setupFee": null
+        },
+        {
+          "tier": "Growth",
+          "price": 9999,
+          "billing": "Monthly",
+          "description": "Expanded guest, billing and reporting workflows.",
+          "setupFee": null
+        },
+        {
+          "tier": "Pro",
+          "price": 19999,
+          "billing": "Monthly",
+          "description": "Advanced property workflows; integrations scoped separately.",
+          "setupFee": null
+        }
+      ]
+    },
+    "orderhub": {
+      "name": "ORDERHUB",
+      "offers": [
+        {
+          "tier": "Starter",
+          "price": 1999,
+          "billing": "Monthly",
+          "description": "Digital catalogue and enquiry/order capture.",
+          "setupFee": null
+        },
+        {
+          "tier": "Growth",
+          "price": 3999,
+          "billing": "Monthly",
+          "description": "Order management and customer updates.",
+          "setupFee": null
+        },
+        {
+          "tier": "Pro",
+          "price": 6999,
+          "billing": "Monthly",
+          "description": "Advanced retail operations and reporting.",
+          "setupFee": null
+        }
+      ]
+    },
+    "clinicos": {
+      "name": "ClinicoOS",
+      "offers": [
+        {
+          "tier": "Starter",
+          "price": 3999,
+          "billing": "Monthly",
+          "description": "Single-clinic appointment and patient workflow.",
+          "setupFee": null
+        },
+        {
+          "tier": "Growth",
+          "price": 7999,
+          "billing": "Monthly",
+          "description": "Expanded records and prescription workflows.",
+          "setupFee": null
+        },
+        {
+          "tier": "Pro",
+          "price": 14999,
+          "billing": "Monthly",
+          "description": "Advanced clinic operations; integration scope confirmed.",
+          "setupFee": null
+        }
+      ]
+    },
+    "student-erp": {
+      "name": "ATSFY Student ERP",
+      "offers": [
+        {
+          "tier": "Starter",
+          "price": 4999,
+          "billing": "Monthly",
+          "description": "Small institution student, attendance and fee workflows.",
+          "setupFee": null
+        },
+        {
+          "tier": "Growth",
+          "price": 9999,
+          "billing": "Monthly",
+          "description": "Expanded academic and examination workflows.",
+          "setupFee": null
+        },
+        {
+          "tier": "Pro",
+          "price": 19999,
+          "billing": "Monthly",
+          "description": "Advanced institution workflows; student limits confirmed.",
+          "setupFee": null
+        }
+      ]
+    },
+    "lexora-legal-tech": {
+      "name": "Lexora Legal-Tech",
+      "offers": [
+        {
+          "tier": "Discovery",
+          "price": 15000,
+          "billing": "One-time",
+          "description": "Paid discovery and requirements definition only; not legal advice.",
+          "setupFee": null
+        },
+        {
+          "tier": "Prototype",
+          "price": 75000,
+          "billing": "One-time",
+          "description": "Prototype only after readiness and professional review.",
+          "setupFee": null
+        },
+        {
+          "tier": "Custom deployment",
+          "price": 250000,
+          "billing": "From",
+          "description": "Indicative starting point; availability and compliance review required.",
+          "setupFee": null
+        }
+      ]
+    },
+    "atsfy-learn": {
+      "name": "ATSFY Learn",
+      "offers": [
+        {
+          "tier": "Short course",
+          "price": 499,
+          "billing": "Per learner",
+          "description": "Course availability and curriculum confirmed before payment.",
+          "setupFee": null
+        },
+        {
+          "tier": "Applied course",
+          "price": 1499,
+          "billing": "Per learner",
+          "description": "Applied course; cohort dates and support confirmed.",
+          "setupFee": null
+        },
+        {
+          "tier": "Cohort programme",
+          "price": 4999,
+          "billing": "Per learner",
+          "description": "Structured cohort programme; schedule confirmed.",
+          "setupFee": null
+        }
+      ]
+    },
+    "easyreport": {
+      "name": "EasyReport",
+      "offers": [
+        {
+          "tier": "Starter",
+          "price": 4999,
+          "billing": "Monthly",
+          "description": "Basic reporting and exports; usage limits confirmed.",
+          "setupFee": null
+        },
+        {
+          "tier": "Growth",
+          "price": 9999,
+          "billing": "Monthly",
+          "description": "More reports and data sources; limits confirmed.",
+          "setupFee": null
+        },
+        {
+          "tier": "Business",
+          "price": 19999,
+          "billing": "Monthly",
+          "description": "Expanded reporting, API and permissions.",
+          "setupFee": null
+        }
+      ]
+    },
+    "atsfy-incubate": {
+      "name": "ATSFY Incubate",
+      "offers": [
+        {
+          "tier": "Founder session",
+          "price": 5000,
+          "billing": "Per session",
+          "description": "One scoped founder advisory session.",
+          "setupFee": null
+        },
+        {
+          "tier": "Validation sprint",
+          "price": 25000,
+          "billing": "One-time",
+          "description": "Defined validation sprint and roadmap.",
+          "setupFee": null
+        },
+        {
+          "tier": "Readiness programme",
+          "price": 60000,
+          "billing": "One-time",
+          "description": "Structured startup readiness support; no funding guarantee.",
+          "setupFee": null
+        }
+      ]
+    },
+    "green-to-gold": {
+      "name": "Green-to-Gold",
+      "offers": [
+        {
+          "tier": "Feasibility study",
+          "price": null,
+          "billing": "Custom quote",
+          "description": "Requires feedstock, BOM, process and testing assessment.",
+          "setupFee": null
+        },
+        {
+          "tier": "Prototype / pilot",
+          "price": null,
+          "billing": "Custom quote",
+          "description": "Requires material, tooling, testing, compliance and logistics costing.",
+          "setupFee": null
+        },
+        {
+          "tier": "Commercial production",
+          "price": null,
+          "billing": "Custom quote",
+          "description": "Quote only after production feasibility and unit economics validation.",
+          "setupFee": null
+        }
+      ]
+    },
+    "rubberos": {
+      "name": "RubberOS",
+      "offers": [
+        {
+          "tier": "Starter",
+          "price": 7999,
+          "billing": "Monthly",
+          "description": "Core rubber-sector workflow workspace.",
+          "setupFee": null
+        },
+        {
+          "tier": "Growth",
+          "price": 14999,
+          "billing": "Monthly",
+          "description": "Expanded operational workflows and reporting.",
+          "setupFee": null
+        },
+        {
+          "tier": "Enterprise",
+          "price": 29999,
+          "billing": "Monthly",
+          "description": "Multi-team workflows; integrations scoped separately.",
+          "setupFee": null
+        }
+      ]
+    },
+    "construction-platform": {
+      "name": "ATSFY Construction",
+      "offers": [
+        {
+          "tier": "Starter",
+          "price": 9999,
+          "billing": "Monthly",
+          "description": "Core project and operations workflows.",
+          "setupFee": null
+        },
+        {
+          "tier": "Growth",
+          "price": 19999,
+          "billing": "Monthly",
+          "description": "Expanded project and team workflows.",
+          "setupFee": null
+        },
+        {
+          "tier": "Enterprise",
+          "price": 39999,
+          "billing": "Monthly",
+          "description": "Advanced multi-project workflows; integrations scoped separately.",
+          "setupFee": null
+        }
+      ]
+    }
+  }
+}
