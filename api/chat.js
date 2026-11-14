@@ -17,7 +17,7 @@ function buildPriceGuidance(history) {
     .replace(/ऐप|অ্যাপ/gu, " app ")
     .replace(/दुकान|दোকান/gu, " shop ")
     .replace(/कीमत|मूल्य|दाम|खर्च|बजट|कोटेशन|কত|দাম|খরচ|মূল্য|বাজেট|দর/gu, " price ");
-  const terms = searchableQuery.split(/[^\\p{L}\\p{N}]+/u).filter(word => word.length > 2);
+  const terms = searchableQuery.split(/[^\p{L}\p{N}]+/u).filter(word => word.length > 2);
   const ranked = entries.map(entry => {
     const haystack = [entry.id,entry.item.name,...entry.plans.flatMap(p=>[p.tier,p.description,...(p.includes||[])])].join(" ").toLowerCase();
     const score = terms.reduce((n,term)=>n+(haystack.includes(term)?1:0),0);
