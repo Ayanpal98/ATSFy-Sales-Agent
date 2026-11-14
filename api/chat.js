@@ -5,15 +5,19 @@ const MAX_MESSAGE_CHARS = 2000;
 const MAX_TOTAL_CHARS = 12000;
 const PRICING_CATALOGUE = require("../catalogue.json");
 function buildPriceGuidance(history) {
-  const lastMessage = [...history].reverse().find(item => item.role === "user")?.content || "";
-  const query = lastMessage.toLowerCase();
-  const pricingIntent = /\b(price|pricing|cost|budget|quote|estimate|package|plan|₹|rupee|how much|charge|fee)\b/i.test(query);
+  const query = history.filter(item => item.role === "user").slice(-4).map(item => item.content).join(" ").toLowerCase();
+  const pricingIntent = /\b(price|pricing|cost|budget|quote|estimate|package|plan|rupee|how much|charge|fee)\b|₹|कीमत|मूल्य|दाम|खर्च|बजट|कोटेशन|कितना|দাম|খরচ|মূল্য|বাজেট|কত|দর/i.test(query);
   if (!pricingIntent) return "Use the current ATSFY catalogue only when discussing prices. If the visitor asks for pricing without specifying a solution, ask one concise clarifying question before quoting.";
   const entries = [
     ...Object.entries(PRICING_CATALOGUE.services).map(([id,item]) => ({id,item,kind:"service",plans:item.packages||[]})),
     ...Object.entries(PRICING_CATALOGUE.products).map(([id,item]) => ({id,item,kind:"product",plans:item.offers||[]}))
   ];
-  const terms = query.split(/[^a-z0-9]+/).filter(word => word.length > 2);
+  const searchableQuery = query
+    .replace(/वेबसाइट|ওয়েবসাইট|ওয়েবসাইট/gu, " website ")
+    .replace(/ऐप|অ্যাপ/gu, " app ")
+    .replace(/दुकान|दোকান/gu, " shop ")
+    .replace(/कीमत|मूल्य|दाम|खर्च|बजट|कोटेशन|কত|দাম|খরচ|মূল্য|বাজেট|দর/gu, " price ");
+  const terms = searchableQuery.split(/[^\\p{L}\\p{N}]+/u).filter(word => word.length > 2);
   const ranked = entries.map(entry => {
     const haystack = [entry.id,entry.item.name,...entry.plans.flatMap(p=>[p.tier,p.description,...(p.includes||[])])].join(" ").toLowerCase();
     const score = terms.reduce((n,term)=>n+(haystack.includes(term)?1:0),0);
