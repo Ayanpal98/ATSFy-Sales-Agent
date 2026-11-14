@@ -108,3 +108,37 @@ test("maps provider throttling to a retryable response", async () => {
     else process.env.GEMINI_API_KEY = originalKey;
   }
 });
+
+
+test("uses recent service context for Hindi and Bengali pricing follow-ups", async () => {
+  const originalFetch = global.fetch;
+  const originalKey = process.env.GEMINI_API_KEY;
+  const originalUrl = process.env.SUPABASE_URL;
+  delete process.env.SUPABASE_URL;
+  process.env.GEMINI_API_KEY = "test-key";
+  let providerBody;
+  global.fetch = async (_url, options) => {
+    providerBody = JSON.parse(options.body);
+    return { ok: true, status: 200, json: async () => ({
+      candidates: [{ content: { parts: [{ text: "I can help estimate the website scope." }] } }]
+    }) };
+  };
+  try {
+    const res = response();
+    await handler(request({ history: [
+      { role: "user", content: "I need a website for my shop." },
+      { role: "model", content: "Of course. What kind of website do you need?" },
+      { role: "user", content: "वेबसाइट की कीमत कितनी होगी?" }
+    ] }), res);
+    assert.equal(res.statusCode, 200);
+    const prompt = providerBody.systemInstruction.parts[0].text;
+    assert.match(prompt, /Website Development/);
+    assert.match(prompt, /₹25,000/);
+  } finally {
+    global.fetch = originalFetch;
+    if (originalKey === undefined) delete process.env.GEMINI_API_KEY;
+    else process.env.GEMINI_API_KEY = originalKey;
+    if (originalUrl === undefined) delete process.env.SUPABASE_URL;
+    else process.env.SUPABASE_URL = originalUrl;
+  }
+});
