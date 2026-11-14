@@ -444,17 +444,33 @@ async function send(text, shareToWhatsApp = false, action = "") {
   const message = String(text || "").trim();
   const estimateRequest = action === "estimate" || /(?:prepare|draft|create).{0,30}estimate/i.test(message);
   if (busy || !message) return;
+  if (message.length > 2000) {
+    add("assistant", "That message is a little long. Please keep each message under 2,000 characters so I can respond reliably.");
+    return;
+  }
   busy = true; go.disabled = true;
   [...chips.querySelectorAll("button")].forEach(button => button.disabled = true);
   add("user", message);
   hist.push({ role: "user", content: message });
   inp.value = "";
   const bubble = add("assistant", "ATSFY is thinking"); bubble.classList.add("typing");
+  const controller = new AbortController();
+  const requestTimeout = setTimeout(() => controller.abort(), 30000);
   try {
+    const requestHistory = [];
+    let historyChars = 0;
+    for (const item of hist.slice(-12).reverse()) {
+      const content = String(item.content || "").trim();
+      if (!content || content.length > 2000 || historyChars + content.length > 12000) break;
+      requestHistory.unshift({ role: item.role, content });
+      historyChars += content.length;
+    }
+    if (requestHistory[0]?.role === "model") requestHistory.shift();
     const response = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ system: SYSTEM, history: hist })
+      signal: controller.signal,
+      body: JSON.stringify({ history: requestHistory })
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "The assistant is temporarily unavailable.");
@@ -471,9 +487,12 @@ async function send(text, shareToWhatsApp = false, action = "") {
     else addWhatsAppLink(bubble, "Website enquiry from ATSFy Sales Agent:\n\nVisitor question: " + visitorQuestion + "\n\nAssistant response: " + answer);
   } catch (error) {
     bubble.classList.remove("typing");
-    bubble.textContent = error.message || "Sorry, something went wrong. Please contact ATSFy on WhatsApp: +91 98625 10477.";
+    bubble.textContent = error.name === "AbortError"
+      ? "The assistant is taking longer than expected. Please try again, or contact ATSFY on WhatsApp: +91 98625 10477."
+      : (error.message || "Sorry, something went wrong. Please contact ATSFY on WhatsApp: +91 98625 10477.");
     hist.pop();
   } finally {
+    clearTimeout(requestTimeout);
     busy = false; go.disabled = false;
     [...chips.querySelectorAll("button")].forEach(button => button.disabled = false); inp.focus();
   }
