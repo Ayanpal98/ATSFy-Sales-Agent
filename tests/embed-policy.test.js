@@ -11,6 +11,8 @@ function headersFor(source) {
 test("only the public root assistant can be embedded by the ATSFY Marketplace", () => {
   const root = headersFor("/");
   assert.match(root["content-security-policy"] || "", /frame-ancestors 'self' https:\/\/atsfymarketplace\.atsfy\.tech/);
+  assert.match(root["content-security-policy"] || "", /https:\/\/atsfy-marketplace-git-feature-sales-72d708-ayanpal98s-projects\.vercel\.app/);
+  assert.doesNotMatch(root["content-security-policy"] || "", /https:\/\/\*\.vercel\.app/);
   assert.equal(root["x-frame-options"], undefined);
 });
 
