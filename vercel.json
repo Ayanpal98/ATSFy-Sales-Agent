@@ -34,7 +34,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' https://atsfymarketplace.atsfy.tech"
+          "value": "frame-ancestors 'self' https://atsfymarketplace.atsfy.tech https://atsfy-marketplace-git-feature-sales-72d708-ayanpal98s-projects.vercel.app"
         }
       ]
     },
